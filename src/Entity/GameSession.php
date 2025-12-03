@@ -11,6 +11,10 @@ use Doctrine\ORM\Mapping as ORM;
 #[ORM\Entity(repositoryClass: GameSessionRepository::class)]
 class GameSession
 {
+    public const STATUS_WAITING = 'WAITING';
+    public const STATUS_IN_PROGRESS = 'IN_PROGRESS';
+    public const STATUS_FINISHED = 'FINISHED';
+
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
@@ -22,8 +26,8 @@ class GameSession
     #[ORM\Column(length: 50)]
     private ?string $status = null;
 
-    #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
-    private ?\DateTimeInterface $startedAt = null;
+    #[ORM\Column(type: Types::DATETIME_IMMUTABLE, nullable: true)]
+    private ?\DateTimeImmutable $startedAt = null;
 
     #[ORM\Column]
     private ?int $currentQuestionIndex = null;
@@ -75,12 +79,12 @@ class GameSession
         return $this;
     }
 
-    public function getStartedAt(): ?\DateTimeInterface
+    public function getStartedAt(): ?\DateTimeImmutable
     {
         return $this->startedAt;
     }
 
-    public function setStartedAt(?\DateTimeInterface $startedAt): static
+    public function setStartedAt(?\DateTimeImmutable $startedAt): static
     {
         $this->startedAt = $startedAt;
 

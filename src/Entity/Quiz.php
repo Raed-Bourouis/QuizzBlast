@@ -11,6 +11,10 @@ use Doctrine\ORM\Mapping as ORM;
 #[ORM\Entity(repositoryClass: QuizRepository::class)]
 class Quiz
 {
+    public const DIFFICULTY_EASY = 'easy';
+    public const DIFFICULTY_MEDIUM = 'medium';
+    public const DIFFICULTY_HARD = 'hard';
+
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
