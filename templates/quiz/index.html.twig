@@ -1,20 +1,40 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Hello QuizController!{% endblock %}
+{% block title %}Quizzes{% endblock %}
 
 {% block body %}
 <style>
-    .example-wrapper { margin: 1em auto; max-width: 800px; width: 95%; font: 18px/1.5 sans-serif; }
-    .example-wrapper code { background: #F5F5F5; padding: 2px 6px; }
+    .quiz-list { margin: 1em auto; max-width: 800px; width: 95%; font: 18px/1.5 sans-serif; }
+    .quiz-card { border: 1px solid #ddd; padding: 1em; margin-bottom: 1em; border-radius: 8px; }
+    .quiz-card h3 { margin-top: 0; }
+    .quiz-meta { color: #666; font-size: 0.9em; }
+    .btn { display: inline-block; padding: 0.5em 1em; background: #007bff; color: white; text-decoration: none; border-radius: 4px; margin-right: 0.5em; }
+    .btn-secondary { background: #6c757d; }
 </style>
 
-<div class="example-wrapper">
-    <h1>Hello {{ controller_name }}! ✅</h1>
+<div class="quiz-list">
+    <h1>Public Quizzes</h1>
+    
+    {% if is_granted('ROLE_USER') %}
+        <p><a href="{{ path('app_quiz_new') }}" class="btn">Create New Quiz</a></p>
+        <p><a href="{{ path('app_quiz_my_quizzes') }}" class="btn btn-secondary">My Quizzes</a></p>
+    {% endif %}
 
-    This friendly message is coming from:
-    <ul>
-        <li>Your controller at <code>C:/Users/raedb/QuizzBlast/src/Controller/QuizController.php</code></li>
-        <li>Your template at <code>C:/Users/raedb/QuizzBlast/templates/quiz/index.html.twig</code></li>
-    </ul>
+    {% if quizzes|length > 0 %}
+        {% for quiz in quizzes %}
+            <div class="quiz-card">
+                <h3>{{ quiz.title }}</h3>
+                <p>{{ quiz.description }}</p>
+                <p class="quiz-meta">
+                    Category: {{ quiz.category }} | 
+                    Difficulty: {{ quiz.difficulty }} |
+                    Questions: {{ quiz.questions|length }}
+                </p>
+                <a href="{{ path('app_quiz_show', {id: quiz.id}) }}" class="btn">View Quiz</a>
+            </div>
+        {% endfor %}
+    {% else %}
+        <p>No public quizzes available yet.</p>
+    {% endif %}
 </div>
 {% endblock %}
