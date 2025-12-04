@@ -29,6 +29,9 @@ class Quiz
     #[ORM\Column(length: 50)]
     private ?string $difficulty = null;
 
+    #[ORM\Column(length: 50)]
+    private ?string $category = 'General';
+
     #[ORM\Column]
     private ?bool $isPublic = null;
 
@@ -97,6 +100,18 @@ class Quiz
     public function setDifficulty(string $difficulty): static
     {
         $this->difficulty = $difficulty;
+
+        return $this;
+    }
+
+    public function getCategory(): ?string
+    {
+        return $this->category;
+    }
+
+    public function setCategory(string $category): static
+    {
+        $this->category = $category;
 
         return $this;
     }
