@@ -11,10 +11,17 @@ use Doctrine\ORM\Mapping as ORM;
 #[ORM\Entity(repositoryClass: QuestionRepository::class)]
 class Question
 {
+    public const TYPE_MULTIPLE_CHOICE = 'multiple_choice';
+    public const TYPE_TRUE_FALSE = 'true_false';
+    public const TYPE_SINGLE_CHOICE = 'single_choice';
+
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
     private ?int $id = null;
+
+    #[ORM\Column(length: 50)]
+    private ?string $questionType = self::TYPE_SINGLE_CHOICE;
 
     #[ORM\Column(type: Types::TEXT)]
     private ?string $text = null;
@@ -45,6 +52,18 @@ class Question
     public function getId(): ?int
     {
         return $this->id;
+    }
+
+    public function getQuestionType(): ?string
+    {
+        return $this->questionType;
+    }
+
+    public function setQuestionType(string $questionType): static
+    {
+        $this->questionType = $questionType;
+
+        return $this;
     }
 
     public function getText(): ?string
