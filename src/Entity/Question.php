@@ -7,6 +7,8 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Validator\Constraints as Assert;
+use Symfony\Component\Validator\Context\ExecutionContextInterface;
 
 #[ORM\Entity(repositoryClass: QuestionRepository::class)]
 class Question
@@ -154,5 +156,56 @@ class Question
         }
 
         return $this;
+    }
+
+    #[Assert\Callback]
+    public function validateQuestionType(ExecutionContextInterface $context): void
+    {
+        // General: Ensure the question has at least one answer
+        if ($this->answers->isEmpty()) {
+            $context->buildViolation('A question must have at least one answer.')
+                ->atPath('answers')
+                ->addViolation();
+            return;
+        }
+
+        // Count correct answers
+        $correctAnswersCount = 0;
+        foreach ($this->answers as $answer) {
+            if ($answer->isCorrect()) {
+                $correctAnswersCount++;
+            }
+        }
+
+        switch ($this->questionType) {
+            case self::TYPE_SINGLE_CHOICE:
+                if ($correctAnswersCount !== 1) {
+                    $context->buildViolation('A single choice question must have exactly one correct answer.')
+                        ->atPath('answers')
+                        ->addViolation();
+                }
+                break;
+
+            case self::TYPE_MULTIPLE_CHOICE:
+                if ($correctAnswersCount < 1) {
+                    $context->buildViolation('A multiple choice question must have at least one correct answer.')
+                        ->atPath('answers')
+                        ->addViolation();
+                }
+                break;
+
+            case self::TYPE_TRUE_FALSE:
+                if ($this->answers->count() !== 2) {
+                    $context->buildViolation('A true/false question must have exactly 2 answers.')
+                        ->atPath('answers')
+                        ->addViolation();
+                }
+                if ($correctAnswersCount !== 1) {
+                    $context->buildViolation('A true/false question must have exactly one correct answer.')
+                        ->atPath('answers')
+                        ->addViolation();
+                }
+                break;
+        }
     }
 }
