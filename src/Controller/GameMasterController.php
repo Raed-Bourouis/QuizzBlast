@@ -6,18 +6,17 @@ use App\Entity\GameSession;
 use App\Repository\GameSessionRepository;
 use App\Repository\GameParticipantRepository;
 use App\Repository\QuizRepository;
+use App\Repository\QuestionRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 
 class GameMasterController extends AbstractController
 {
     /**
-     * Démarre une nouvelle partie à partir d'un quiz.
-     *
-     * URL : /game/start/{id}
-     * - {id} = id du Quiz
+     * Démarre une nouvelle partie.
      */
     #[Route('/game/start/{id}', name: 'game_start', methods: ['GET'])]
     public function start(
@@ -26,21 +25,15 @@ class GameMasterController extends AbstractController
         GameSessionRepository $sessionRepo,
         EntityManagerInterface $em
     ): Response {
-        // On force un utilisateur connecté (Game Master)
         $this->denyAccessUnlessGranted('IS_AUTHENTICATED_FULLY');
 
-        // 1) Récupérer le quiz
         $quiz = $quizRepo->find($id);
         if (!$quiz) {
-            throw $this->createNotFoundException(
-                'Quiz introuvable. Créez un quiz avant de démarrer une partie.'
-            );
+            throw $this->createNotFoundException('Quiz introuvable.');
         }
 
-        // 2) Générer un code de partie unique (4 chiffres)
         $code = $this->generateUniqueCode($sessionRepo);
 
-        // 3) Créer la GameSession
         $session = new GameSession();
         $session->setQuiz($quiz);
         $session->setHost($this->getUser());
@@ -51,17 +44,112 @@ class GameMasterController extends AbstractController
         $em->persist($session);
         $em->flush();
 
-        // 4) Afficher la page Game Master avec le code
         return $this->render('game_master/host.html.twig', [
             'session' => $session,
         ]);
     }
 
     /**
-     * Termine la partie : calcule les scores et passe le statut à FINISHED.
-     *
-     * URL : /game/{code}/end
-     * - {code} = code à 4 chiffres de la GameSession
+     * ⚡ Commencer la partie
+     */
+    #[Route('/game/{code}/start-game', name: 'game_start_game', methods: ['POST'])]
+    public function startGame(
+        string $code,
+        GameSessionRepository $sessionRepo,
+        EntityManagerInterface $em
+    ): JsonResponse 
+    {
+        $session = $sessionRepo->findOneBy(['code' => $code]);
+        if (!$session) {
+            return new JsonResponse(['error' => 'Session introuvable'], 404);
+        }
+
+        $session->setStatus(GameSession::STATUS_IN_PROGRESS);
+        $session->setCurrentQuestionIndex(0);
+
+        $em->flush();
+
+        return new JsonResponse(['message' => 'Game started']);
+    }
+
+    /**
+     * ➡ Aller à la question suivante
+     */
+    #[Route('/game/{code}/next', name: 'game_next_question', methods: ['POST'])]
+    public function nextQuestion(
+        string $code,
+        GameSessionRepository $sessionRepo,
+        EntityManagerInterface $em
+    ): JsonResponse 
+    {
+        $session = $sessionRepo->findOneBy(['code' => $code]);
+
+        if (!$session) {
+            return new JsonResponse(['error' => 'Session introuvable'], 404);
+        }
+
+        $quiz = $session->getQuiz();
+        $questions = $quiz->getQuestions();
+
+        $currentIndex = $session->getCurrentQuestionIndex();
+        $total = count($questions);
+
+        // Fin du quiz ?
+        if ($currentIndex >= $total - 1) {
+            $session->setStatus(GameSession::STATUS_FINISHED);
+            $em->flush();
+            return new JsonResponse(['finished' => true]);
+        }
+
+        // Sinon passer à la question suivante
+        $session->setCurrentQuestionIndex($currentIndex + 1);
+        $em->flush();
+
+        return new JsonResponse([
+            'finished' => false,
+            'index' => $session->getCurrentQuestionIndex()
+        ]);
+    }
+
+
+    /**
+     * 🔄 Endpoint de polling pour front (état de la session)
+     * Retourne :
+     * - status
+     * - currentQuestion
+     * - participants
+     */
+    #[Route('/game/{code}/state', name: 'game_state', methods: ['GET'])]
+    public function getState(
+        string $code,
+        GameSessionRepository $sessionRepo,
+        GameParticipantRepository $participantRepo
+    ): JsonResponse
+    {
+        $session = $sessionRepo->findOneBy(['code' => $code]);
+
+        if (!$session) {
+            return new JsonResponse(['error' => 'Session introuvable'], 404);
+        }
+
+        $participants = $participantRepo->findBy(['gameSession' => $session]);
+
+        return new JsonResponse([
+            'status' => $session->getStatus(),
+            'currentQuestionIndex' => $session->getCurrentQuestionIndex(),
+            'participants' => array_map(function($p) {
+                return [
+                    'id' => $p->getId(),
+                    'username' => $p->getUsername(),
+                    'score' => $p->getTotalScore(),
+                ];
+            }, $participants)
+        ]);
+    }
+
+
+    /**
+     * Termine la partie (déjà fait)
      */
     #[Route('/game/{code}/end', name: 'game_end', methods: ['GET'])]
     public function end(
@@ -70,45 +158,27 @@ class GameMasterController extends AbstractController
         GameParticipantRepository $participantRepo,
         EntityManagerInterface $em
     ): Response {
-        // 1) Retrouver la session grâce au code
         $session = $sessionRepo->findOneBy(['code' => $code]);
         if (!$session) {
-            throw $this->createNotFoundException('Session de jeu introuvable.');
+            throw $this->createNotFoundException('Session introuvable.');
         }
 
-        // 2) Récupérer les participants de cette session
         $participants = $participantRepo->findBy(['gameSession' => $session]);
 
-        // 3) Calculer le score pour chaque participant
         foreach ($participants as $participant) {
-            $totalPoints = 0;
-
-            // On utilise la relation GameParticipant -> PlayerAnswer
-            foreach ($participant->getPlayerAnswers() as $answer) {
-                // PlayerAnswer a bien getPoints()
-                $points = $answer->getPoints() ?? 0;
-                $totalPoints += $points;
+            $total = 0;
+            foreach ($participant->getPlayerAnswers() as $ans) {
+                $total += $ans->getPoints() ?? 0;
             }
-
-            // On enregistre le score total dans totalScore
-            $participant->setTotalScore($totalPoints);
+            $participant->setTotalScore($total);
         }
 
-        // 4) Marquer la session comme FINISHED
         $session->setStatus(GameSession::STATUS_FINISHED);
         $em->flush();
 
-        // 5) Rediriger vers le leaderboard
-        return $this->redirectToRoute('game_leaderboard', [
-            'code' => $code,
-        ]);
+        return $this->redirectToRoute('game_leaderboard', ['code' => $code]);
     }
 
-    /**
-     * Affiche le classement final pour une GameSession.
-     *
-     * URL : /game/{code}/leaderboard
-     */
     #[Route('/game/{code}/leaderboard', name: 'game_leaderboard', methods: ['GET'])]
     public function leaderboard(
         string $code,
@@ -117,24 +187,20 @@ class GameMasterController extends AbstractController
     ): Response {
         $session = $sessionRepo->findOneBy(['code' => $code]);
         if (!$session) {
-            throw $this->createNotFoundException('Session de jeu introuvable.');
+            throw $this->createNotFoundException('Session introuvable.');
         }
 
-        // Récupérer les participants triés par totalScore décroissant.
         $participants = $participantRepo->findBy(
             ['gameSession' => $session],
             ['totalScore' => 'DESC']
         );
 
         return $this->render('game_master/leaderboard.html.twig', [
-            'session'      => $session,
+            'session' => $session,
             'participants' => $participants,
         ]);
     }
 
-    /**
-     * Génère un code à 4 chiffres unique pour une GameSession.
-     */
     private function generateUniqueCode(GameSessionRepository $repo): string
     {
         do {
