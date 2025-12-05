@@ -1,0 +1,24 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Game Master{% endblock %}
+
+{% block body %}
+    <h1>Game Master</h1>
+
+    <p>Code de la partie : <strong>{{ session.code }}</strong></p>
+
+    <p>
+        Quiz :
+        {{ session.quiz.title ?? 'Quiz' }}
+    </p>
+
+    <p>Statut : {{ session.status }}</p>
+
+    <p>Partage ce code avec les joueurs pour qu'ils puissent rejoindre la partie.</p>
+
+    <p>
+        <a href="{{ path('game_leaderboard', { code: session.code }) }}">
+            Voir le classement (leaderboard)
+        </a>
+    </p>
+{% endblock %}
