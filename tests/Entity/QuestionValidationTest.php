@@ -5,6 +5,7 @@ namespace App\Tests\Entity;
 use App\Entity\Answer;
 use App\Entity\Question;
 use PHPUnit\Framework\TestCase;
+use Symfony\Component\Validator\ConstraintViolationListInterface;
 use Symfony\Component\Validator\Validation;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 
@@ -38,6 +39,40 @@ class QuestionValidationTest extends TestCase
         return $question;
     }
 
+    /**
+     * Filter violations to only include callback-related violations.
+     *
+     * @return array<\Symfony\Component\Validator\ConstraintViolationInterface>
+     */
+    private function filterCallbackViolations(ConstraintViolationListInterface $violations): array
+    {
+        $keywords = ['single choice', 'multiple choice', 'true/false', 'must have at least one answer'];
+        return array_filter(
+            iterator_to_array($violations),
+            function ($v) use ($keywords) {
+                foreach ($keywords as $keyword) {
+                    if (str_contains($v->getMessage(), $keyword)) {
+                        return true;
+                    }
+                }
+                return false;
+            }
+        );
+    }
+
+    /**
+     * Check if a specific message is found in the violations.
+     */
+    private function hasViolationContaining(ConstraintViolationListInterface $violations, string $needle): bool
+    {
+        foreach ($violations as $violation) {
+            if (str_contains($violation->getMessage(), $needle)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     // General Validation Tests
     public function testQuestionMustHaveAtLeastOneAnswer(): void
     {
@@ -61,13 +96,7 @@ class QuestionValidationTest extends TestCase
         $question->addAnswer($this->createAnswer(false));
 
         $violations = $this->validator->validate($question);
-
-        // Filter to only show callback validation violations (ignore NotNull, etc.)
-        $callbackViolations = array_filter(
-            iterator_to_array($violations),
-            fn($v) => str_contains($v->getMessage(), 'single choice') || 
-                      str_contains($v->getMessage(), 'must have at least one answer')
-        );
+        $callbackViolations = $this->filterCallbackViolations($violations);
 
         $this->assertCount(0, $callbackViolations);
     }
@@ -81,14 +110,10 @@ class QuestionValidationTest extends TestCase
         $violations = $this->validator->validate($question);
 
         $this->assertGreaterThan(0, $violations->count());
-        $found = false;
-        foreach ($violations as $violation) {
-            if (str_contains($violation->getMessage(), 'exactly one correct answer')) {
-                $found = true;
-                break;
-            }
-        }
-        $this->assertTrue($found, 'Expected violation for single choice with no correct answer');
+        $this->assertTrue(
+            $this->hasViolationContaining($violations, 'exactly one correct answer'),
+            'Expected violation for single choice with no correct answer'
+        );
     }
 
     public function testSingleChoiceWithMultipleCorrectAnswersIsInvalid(): void
@@ -100,14 +125,10 @@ class QuestionValidationTest extends TestCase
         $violations = $this->validator->validate($question);
 
         $this->assertGreaterThan(0, $violations->count());
-        $found = false;
-        foreach ($violations as $violation) {
-            if (str_contains($violation->getMessage(), 'exactly one correct answer')) {
-                $found = true;
-                break;
-            }
-        }
-        $this->assertTrue($found, 'Expected violation for single choice with multiple correct answers');
+        $this->assertTrue(
+            $this->hasViolationContaining($violations, 'exactly one correct answer'),
+            'Expected violation for single choice with multiple correct answers'
+        );
     }
 
     // Multiple Choice Validation Tests
@@ -119,12 +140,7 @@ class QuestionValidationTest extends TestCase
         $question->addAnswer($this->createAnswer(false));
 
         $violations = $this->validator->validate($question);
-
-        $callbackViolations = array_filter(
-            iterator_to_array($violations),
-            fn($v) => str_contains($v->getMessage(), 'multiple choice') || 
-                      str_contains($v->getMessage(), 'must have at least one answer')
-        );
+        $callbackViolations = $this->filterCallbackViolations($violations);
 
         $this->assertCount(0, $callbackViolations);
     }
@@ -138,14 +154,10 @@ class QuestionValidationTest extends TestCase
         $violations = $this->validator->validate($question);
 
         $this->assertGreaterThan(0, $violations->count());
-        $found = false;
-        foreach ($violations as $violation) {
-            if (str_contains($violation->getMessage(), 'at least one correct answer')) {
-                $found = true;
-                break;
-            }
-        }
-        $this->assertTrue($found, 'Expected violation for multiple choice with no correct answer');
+        $this->assertTrue(
+            $this->hasViolationContaining($violations, 'at least one correct answer'),
+            'Expected violation for multiple choice with no correct answer'
+        );
     }
 
     // True/False Validation Tests
@@ -156,12 +168,7 @@ class QuestionValidationTest extends TestCase
         $question->addAnswer($this->createAnswer(false));
 
         $violations = $this->validator->validate($question);
-
-        $callbackViolations = array_filter(
-            iterator_to_array($violations),
-            fn($v) => str_contains($v->getMessage(), 'true/false') || 
-                      str_contains($v->getMessage(), 'must have at least one answer')
-        );
+        $callbackViolations = $this->filterCallbackViolations($violations);
 
         $this->assertCount(0, $callbackViolations);
     }
@@ -174,14 +181,10 @@ class QuestionValidationTest extends TestCase
         $violations = $this->validator->validate($question);
 
         $this->assertGreaterThan(0, $violations->count());
-        $found = false;
-        foreach ($violations as $violation) {
-            if (str_contains($violation->getMessage(), 'exactly 2 answers')) {
-                $found = true;
-                break;
-            }
-        }
-        $this->assertTrue($found, 'Expected violation for true/false with less than 2 answers');
+        $this->assertTrue(
+            $this->hasViolationContaining($violations, 'exactly 2 answers'),
+            'Expected violation for true/false with less than 2 answers'
+        );
     }
 
     public function testTrueFalseWithMoreThanTwoAnswersIsInvalid(): void
@@ -194,14 +197,10 @@ class QuestionValidationTest extends TestCase
         $violations = $this->validator->validate($question);
 
         $this->assertGreaterThan(0, $violations->count());
-        $found = false;
-        foreach ($violations as $violation) {
-            if (str_contains($violation->getMessage(), 'exactly 2 answers')) {
-                $found = true;
-                break;
-            }
-        }
-        $this->assertTrue($found, 'Expected violation for true/false with more than 2 answers');
+        $this->assertTrue(
+            $this->hasViolationContaining($violations, 'exactly 2 answers'),
+            'Expected violation for true/false with more than 2 answers'
+        );
     }
 
     public function testTrueFalseWithNoCorrectAnswerIsInvalid(): void
@@ -213,14 +212,10 @@ class QuestionValidationTest extends TestCase
         $violations = $this->validator->validate($question);
 
         $this->assertGreaterThan(0, $violations->count());
-        $found = false;
-        foreach ($violations as $violation) {
-            if (str_contains($violation->getMessage(), 'exactly one correct answer')) {
-                $found = true;
-                break;
-            }
-        }
-        $this->assertTrue($found, 'Expected violation for true/false with no correct answer');
+        $this->assertTrue(
+            $this->hasViolationContaining($violations, 'exactly one correct answer'),
+            'Expected violation for true/false with no correct answer'
+        );
     }
 
     public function testTrueFalseWithTwoCorrectAnswersIsInvalid(): void
@@ -232,13 +227,9 @@ class QuestionValidationTest extends TestCase
         $violations = $this->validator->validate($question);
 
         $this->assertGreaterThan(0, $violations->count());
-        $found = false;
-        foreach ($violations as $violation) {
-            if (str_contains($violation->getMessage(), 'exactly one correct answer')) {
-                $found = true;
-                break;
-            }
-        }
-        $this->assertTrue($found, 'Expected violation for true/false with two correct answers');
+        $this->assertTrue(
+            $this->hasViolationContaining($violations, 'exactly one correct answer'),
+            'Expected violation for true/false with two correct answers'
+        );
     }
 }

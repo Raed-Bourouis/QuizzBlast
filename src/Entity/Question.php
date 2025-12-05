@@ -172,7 +172,7 @@ class Question
         // Count correct answers
         $correctAnswersCount = 0;
         foreach ($this->answers as $answer) {
-            if ($answer->isCorrect()) {
+            if ($answer->isCorrect() === true) {
                 $correctAnswersCount++;
             }
         }
