@@ -9,60 +9,106 @@
             <div class="card shadow">
                 <div class="card-body p-5 text-center">
                     <h1 class="display-4 fw-bold mb-4">🎮 Game Master</h1>
-                    
+
                     <div class="alert alert-primary mb-4" role="alert">
                         <h3 class="h4 mb-3">Game Code</h3>
                         <div class="display-3 fw-bold text-primary mb-2">{{ session.code }}</div>
                         <p class="mb-0">Share this code with players to join the game</p>
                     </div>
 
-    <p>Code de la session : <strong>{{ session.code }}</strong></p>
-    <p>Status : <span id="status">{{ session.status }}</span></p>
+                    <p>Status : <span id="status">{{ session.status }}</span></p>
 
-    <button id="startGameBtn">Démarrer la partie</button>
-    <button id="nextQuestionBtn" disabled>Question suivante</button>
+                    <button id="startGameBtn">Démarrer la partie</button>
+                    <button id="nextQuestionBtn" disabled>Question suivante</button>
 
-    <h2>Participants</h2>
-    <ul id="participants">
-        {% for participant in session.gameParticipants %}
-            <li>{{ participant.nickname }} - <span id="score-{{ participant.id }}">{{ participant.totalScore }}</span> points</li>
-        {% endfor %}
-    </ul>
+                    <h2>Participants</h2>
+                    <ul id="participants">
+                        {% for participant in session.gameParticipants %}
+                            <li id="participant-{{ participant.id }}">
+                                {{ participant.nickname }} - <span id="score-{{ participant.id }}">{{ participant.totalScore }}</span> points
+                            </li>
+                        {% endfor %}
+                    </ul>
 
-    <script>
-        const code = "{{ session.code }}";
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 
-        const startBtn = document.getElementById('startGameBtn');
-        const nextBtn = document.getElementById('nextQuestionBtn');
+<script>
+    const code = "{{ session.code }}";
 
-        startBtn.addEventListener('click', () => {
-            fetch(`/game/${code}/start-game`, { method: 'POST' })
-                .then(res => res.json())
-                .then(data => {
-                    if(data.success){
-                        document.getElementById('status').innerText = 'IN_PROGRESS';
-                        startBtn.disabled = true;
-                        nextBtn.disabled = false;
+    const startBtn = document.getElementById('startGameBtn');
+    const nextBtn = document.getElementById('nextQuestionBtn');
+    const statusSpan = document.getElementById('status');
+
+    // WebSocket pour recevoir les mises à jour en temps réel
+    const ws = new WebSocket('ws://localhost:8080/game');
+
+    ws.onopen = () => console.log('Connecté au WebSocket !');
+
+    ws.onmessage = (event) => {
+        const msg = JSON.parse(event.data);
+        console.log('Message WebSocket reçu :', msg);
+
+        switch(msg.type) {
+            case 'START_GAME':
+                statusSpan.innerText = 'IN_PROGRESS';
+                startBtn.disabled = true;
+                nextBtn.disabled = false;
+                break;
+
+            case 'NEXT_QUESTION':
+                console.log('Question suivante :', msg.payload.questionIndex);
+                break;
+
+            case 'END_GAME':
+                statusSpan.innerText = 'FINISHED';
+                nextBtn.disabled = true;
+
+                // Mettre à jour le leaderboard
+                msg.payload.leaderboard.forEach(p => {
+                    const scoreSpan = document.getElementById(`score-${p.id}`);
+                    if(scoreSpan){
+                        scoreSpan.innerText = p.score;
+                    } else {
+                        // Si nouveau participant
+                        const li = document.createElement('li');
+                        li.id = `participant-${p.id}`;
+                        li.innerHTML = `${p.nickname} - <span id="score-${p.id}">${p.score}</span> points`;
+                        document.getElementById('participants').appendChild(li);
                     }
                 });
-        });
+                break;
+        }
+    };
 
-        nextBtn.addEventListener('click', () => {
-            fetch(`/game/${code}/next`, { method: 'POST' })
-                .then(res => res.json())
-                .then(data => {
-                    if(data.success){
-                        console.log('Question suivante envoyée');
-                    }
-                });
-        });
+    ws.onclose = () => console.log('WebSocket fermé');
+    ws.onerror = (err) => console.error('Erreur WebSocket', err);
 
-        // Optionnel : WebSocket pour recevoir les updates
-        const ws = new WebSocket('ws://localhost:8080/game');
+    // Bouton démarrer
+    startBtn.addEventListener('click', () => {
+        fetch(`/game/${code}/start-game`, { method: 'POST' })
+            .then(res => res.json())
+            .then(data => {
+                if(data.success){
+                    statusSpan.innerText = 'IN_PROGRESS';
+                    startBtn.disabled = true;
+                    nextBtn.disabled = false;
+                }
+            });
+    });
 
-        ws.onmessage = (event) => {
-            const msg = JSON.parse(event.data);
-            console.log('Message WebSocket reçu :', msg);
-        };
-    </script>
+    // Bouton question suivante
+    nextBtn.addEventListener('click', () => {
+        fetch(`/game/${code}/next`, { method: 'POST' })
+            .then(res => res.json())
+            .then(data => {
+                if(data.success){
+                    console.log('Question suivante envoyée');
+                }
+            });
+    });
+</script>
 {% endblock %}
