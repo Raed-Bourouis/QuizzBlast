@@ -13,6 +13,10 @@
     .checkbox-group input { width: auto; }
     .btn { display: inline-block; padding: 0.5em 1em; background: #007bff; color: white; text-decoration: none; border-radius: 4px; margin-right: 0.5em; border: none; cursor: pointer; }
     .btn-secondary { background: #6c757d; }
+    .btn:hover { opacity: 0.9; }
+    .add-question { margin-top: 1em; background: #28a745; }
+    .add-answer { background: #17a2b8; margin-top: 0.5em; }
+    .remove-question, .remove-answer { background: #dc3545; margin-top: 0.5em; }
     .collection-item { border: 1px solid #ddd; padding: 1em; margin-bottom: 1em; border-radius: 4px; background: #f9f9f9; }
     .nested-collection { border: 1px solid #ccc; padding: 0.5em; margin: 0.5em 0; border-radius: 4px; background: #fff; }
 </style>
@@ -58,7 +62,7 @@
         </div>
 
         <h2>Questions</h2>
-        <div class="questions-collection" data-prototype="{{ form_widget(form.questions.vars.prototype)|e('html_attr') }}">
+        <div class="questions-collection" data-prototype="{{ form_widget(form.questions.vars.prototype)|e('html_attr') }}" data-index="{{ form.questions|length }}">
             {% for question in form.questions %}
                 <div class="collection-item question-item">
                     {{ form_row(question.text) }}
@@ -68,18 +72,22 @@
                     {{ form_row(question.mediaUrl) }}
                     
                     <h4>Answers</h4>
-                    <div class="answers-collection" data-prototype="{{ form_widget(question.answers.vars.prototype)|e('html_attr') }}">
+                    <div class="answers-collection" data-prototype="{{ form_widget(question.answers.vars.prototype)|e('html_attr') }}" data-index="{{ question.answers|length }}">
                         {% for answer in question.answers %}
                             <div class="nested-collection answer-item">
                                 {{ form_row(answer.text) }}
                                 {{ form_row(answer.isCorrect) }}
                                 {{ form_row(answer.orderIndex) }}
+                                <button type="button" class="btn btn-secondary remove-answer">Remove Answer</button>
                             </div>
                         {% endfor %}
                     </div>
+                    <button type="button" class="btn add-answer">Add Answer</button>
+                    <button type="button" class="btn btn-secondary remove-question">Remove Question</button>
                 </div>
             {% endfor %}
         </div>
+        <button type="button" class="btn add-question">Add Question</button>
 
         <div class="form-group">
             <button type="submit" class="btn">Create Quiz</button>
@@ -87,4 +95,125 @@
         </div>
     {{ form_end(form) }}
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Function to add a new question
+    const questionsCollection = document.querySelector('.questions-collection');
+    const addQuestionButton = document.querySelector('.add-question');
+    
+    if (addQuestionButton) {
+        addQuestionButton.addEventListener('click', function() {
+            addQuestion(questionsCollection);
+        });
+    }
+    
+    // Add event listeners to existing remove question buttons
+    document.querySelectorAll('.remove-question').forEach(function(button) {
+        button.addEventListener('click', function() {
+            removeQuestion(button);
+        });
+    });
+    
+    // Add event listeners to existing add answer buttons
+    document.querySelectorAll('.add-answer').forEach(function(button) {
+        button.addEventListener('click', function() {
+            const questionItem = button.closest('.question-item');
+            const answersCollection = questionItem.querySelector('.answers-collection');
+            addAnswer(answersCollection);
+        });
+    });
+    
+    // Add event listeners to existing remove answer buttons
+    document.querySelectorAll('.remove-answer').forEach(function(button) {
+        button.addEventListener('click', function() {
+            removeAnswer(button);
+        });
+    });
+    
+    function addQuestion(collection) {
+        const prototype = collection.getAttribute('data-prototype');
+        let index = parseInt(collection.getAttribute('data-index'));
+        
+        // Replace '__name__' placeholder with the actual index
+        let newForm = prototype.replace(/__name__/g, index);
+        
+        // Create a wrapper div for the new question
+        const wrapper = document.createElement('div');
+        wrapper.classList.add('collection-item', 'question-item');
+        wrapper.innerHTML = newForm;
+        
+        // Find the answers collection in the new form and update its data-index
+        const answersCollection = wrapper.querySelector('.answers-collection');
+        if (answersCollection) {
+            answersCollection.setAttribute('data-index', '0');
+            
+            // Add "Add Answer" button
+            const addAnswerBtn = document.createElement('button');
+            addAnswerBtn.type = 'button';
+            addAnswerBtn.className = 'btn add-answer';
+            addAnswerBtn.textContent = 'Add Answer';
+            addAnswerBtn.addEventListener('click', function() {
+                addAnswer(answersCollection);
+            });
+            wrapper.appendChild(addAnswerBtn);
+        }
+        
+        // Add "Remove Question" button
+        const removeBtn = document.createElement('button');
+        removeBtn.type = 'button';
+        removeBtn.className = 'btn btn-secondary remove-question';
+        removeBtn.textContent = 'Remove Question';
+        removeBtn.addEventListener('click', function() {
+            removeQuestion(removeBtn);
+        });
+        wrapper.appendChild(removeBtn);
+        
+        // Add the new question to the collection
+        collection.appendChild(wrapper);
+        
+        // Increment the index
+        collection.setAttribute('data-index', index + 1);
+    }
+    
+    function removeQuestion(button) {
+        const questionItem = button.closest('.question-item');
+        questionItem.remove();
+    }
+    
+    function addAnswer(collection) {
+        const prototype = collection.getAttribute('data-prototype');
+        let index = parseInt(collection.getAttribute('data-index'));
+        
+        // Replace '__name__' placeholder with the actual index
+        let newForm = prototype.replace(/__name__/g, index);
+        
+        // Create a wrapper div for the new answer
+        const wrapper = document.createElement('div');
+        wrapper.classList.add('nested-collection', 'answer-item');
+        wrapper.innerHTML = newForm;
+        
+        // Add "Remove Answer" button
+        const removeBtn = document.createElement('button');
+        removeBtn.type = 'button';
+        removeBtn.className = 'btn btn-secondary remove-answer';
+        removeBtn.textContent = 'Remove Answer';
+        removeBtn.addEventListener('click', function() {
+            removeAnswer(removeBtn);
+        });
+        wrapper.appendChild(removeBtn);
+        
+        // Add the new answer to the collection
+        collection.appendChild(wrapper);
+        
+        // Increment the index
+        collection.setAttribute('data-index', index + 1);
+    }
+    
+    function removeAnswer(button) {
+        const answerItem = button.closest('.answer-item');
+        answerItem.remove();
+    }
+});
+</script>
 {% endblock %}
