@@ -1,5 +1,8 @@
 {# Reusable JavaScript for dynamic question and answer forms #}
 <script>
+// Constants for validation
+const MINIMUM_ANSWER_COUNT = 2;
+
 document.addEventListener('DOMContentLoaded', function() {
     initializeDynamicForms();
 });
@@ -71,7 +74,7 @@ function addQuestion(collection) {
     if (!existingBadge) {
         const badge = document.createElement('div');
         badge.className = 'question-number-badge';
-        badge.innerHTML = '<i class="bi bi-question-circle-fill"></i> Question #' + (index + 1);
+        badge.innerHTML = `<i class="bi bi-question-circle-fill"></i> Question #${index + 1}`;
         wrapper.insertBefore(badge, wrapper.firstChild);
     }
     
@@ -179,8 +182,8 @@ function removeAnswer(button) {
         const answersCollection = answerItem.closest('.answers-collection');
         const answerCount = answersCollection ? answersCollection.querySelectorAll('.answer-item').length : 0;
         
-        if (answerCount <= 2) {
-            alert('A question must have at least 2 answers.');
+        if (answerCount <= MINIMUM_ANSWER_COUNT) {
+            alert(`A question must have at least ${MINIMUM_ANSWER_COUNT} answers.`);
             return;
         }
         
@@ -193,12 +196,12 @@ function updateQuestionNumbers() {
     questionItems.forEach((item, index) => {
         const badge = item.querySelector('.question-number-badge');
         if (badge) {
-            badge.innerHTML = '<i class="bi bi-question-circle-fill"></i> Question #' + (index + 1);
+            badge.innerHTML = `<i class="bi bi-question-circle-fill"></i> Question #${index + 1}`;
         }
         // Also update h5 headers for simpler styled versions
         const header = item.querySelector('h5');
         if (header && header.textContent.includes('Question #')) {
-            header.textContent = 'Question #' + (index + 1);
+            header.textContent = `Question #${index + 1}`;
         }
     });
 }

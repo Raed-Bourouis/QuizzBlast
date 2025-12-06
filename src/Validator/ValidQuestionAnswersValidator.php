@@ -9,6 +9,10 @@ use Symfony\Component\Validator\Exception\UnexpectedTypeException;
 
 class ValidQuestionAnswersValidator extends ConstraintValidator
 {
+    private const MINIMUM_ANSWER_COUNT = 2;
+    private const TRUE_FALSE_ANSWER_COUNT = 2;
+    private const SINGLE_CHOICE_CORRECT_ANSWER_COUNT = 1;
+
     public function validate($value, Constraint $constraint): void
     {
         if (!$constraint instanceof ValidQuestionAnswers) {
@@ -24,10 +28,10 @@ class ValidQuestionAnswersValidator extends ConstraintValidator
         $questionType = $value->getQuestionType();
 
         // Check minimum answers based on question type
-        if ($answerCount < 2) {
+        if ($answerCount < self::MINIMUM_ANSWER_COUNT) {
             $this->context->buildViolation($constraint->messageTooFewAnswers)
                 ->setParameter('{{ type }}', $questionType)
-                ->setParameter('{{ min }}', '2')
+                ->setParameter('{{ min }}', (string) self::MINIMUM_ANSWER_COUNT)
                 ->addViolation();
             return;
         }
@@ -48,7 +52,7 @@ class ValidQuestionAnswersValidator extends ConstraintValidator
 
         // Specific validation for TRUE_FALSE questions
         if ($questionType === Question::TYPE_TRUE_FALSE) {
-            if ($answerCount !== 2) {
+            if ($answerCount !== self::TRUE_FALSE_ANSWER_COUNT) {
                 $this->context->buildViolation($constraint->messageTrueFalseExact)
                     ->addViolation();
                 return;
@@ -57,7 +61,7 @@ class ValidQuestionAnswersValidator extends ConstraintValidator
 
         // Specific validation for SINGLE_CHOICE questions
         if ($questionType === Question::TYPE_SINGLE_CHOICE) {
-            if ($correctAnswerCount !== 1) {
+            if ($correctAnswerCount !== self::SINGLE_CHOICE_CORRECT_ANSWER_COUNT) {
                 $this->context->buildViolation($constraint->messageSingleChoiceOneCorrect)
                     ->addViolation();
                 return;
