@@ -1,0 +1,162 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}API Test - User Endpoints{% endblock %}
+
+{% block body %}
+<div class="container mt-5">
+    <h1 class="mb-4">User API Testing</h1>
+
+    <div class="row">
+        <!-- Get User Info Test -->
+        <div class="col-md-6 mb-4">
+            <div class="card">
+                <div class="card-header bg-info text-white">
+                    <h5>GET /getuser</h5>
+                </div>
+                <div class="card-body">
+                    <button class="btn btn-info" onclick="testGetUser()">Test Get User</button>
+                    <hr>
+                    <h6>Response:</h6>
+                    <pre id="get-user-response" class="bg-light p-3 border rounded" style="max-height: 300px; overflow-y: auto;">
+Click "Test Get User" button to see response
+                    </pre>
+                </div>
+            </div>
+        </div>
+
+        <!-- Update User Test -->
+        <div class="col-md-6 mb-4">
+            <div class="card">
+                <div class="card-header bg-warning text-dark">
+                    <h5>POST /user/update</h5>
+                </div>
+                <div class="card-body">
+                    <form id="update-user-form" onsubmit="testUpdateUser(event)">
+                        <div class="mb-2">
+                            <label class="form-label">Username</label>
+                            <input type="text" class="form-control form-control-sm" id="test-username" placeholder="New username">
+                        </div>
+                        <div class="mb-2">
+                            <label class="form-label">Email</label>
+                            <input type="email" class="form-control form-control-sm" id="test-email" placeholder="New email">
+                        </div>
+                        <div class="mb-2">
+                            <label class="form-label">Current Password</label>
+                            <input type="password" class="form-control form-control-sm" id="test-current-password" placeholder="Current password">
+                        </div>
+                        <div class="mb-2">
+                            <label class="form-label">New Password</label>
+                            <input type="password" class="form-control form-control-sm" id="test-new-password" placeholder="New password">
+                        </div>
+                        <button type="submit" class="btn btn-warning">Test Update User</button>
+                        <button type="button" class="btn btn-secondary btn-sm" onclick="loadCurrentData()">Load Current Data</button>
+                    </form>
+                    <hr>
+                    <h6>Response:</h6>
+                    <pre id="update-user-response" class="bg-light p-3 border rounded" style="max-height: 300px; overflow-y: auto;">
+Fill form and click "Test Update User" to see response
+                    </pre>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="alert alert-info">
+        <strong>Note:</strong> This page is for testing API endpoints. Use the actual profile pages for regular usage.
+        <ul>
+            <li><a href="{{ path('user_profile') }}">View Profile</a></li>
+            <li><a href="{{ path('user_edit') }}">Edit Profile</a></li>
+        </ul>
+    </div>
+</div>
+
+<script>
+    function testGetUser() {
+        const responseElement = document.getElementById('get-user-response');
+        responseElement.textContent = 'Loading...';
+
+        fetch('/getuser', {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            credentials: 'same-origin'
+        })
+        .then(response => response.json())
+        .then(data => {
+            responseElement.textContent = JSON.stringify(data, null, 2);
+            responseElement.classList.remove('text-danger');
+            responseElement.classList.add('text-success');
+        })
+        .catch(error => {
+            responseElement.textContent = 'Error: ' + error.message;
+            responseElement.classList.remove('text-success');
+            responseElement.classList.add('text-danger');
+        });
+    }
+
+    function testUpdateUser(event) {
+        event.preventDefault();
+        
+        const responseElement = document.getElementById('update-user-response');
+        responseElement.textContent = 'Sending request...';
+
+        const data = {};
+        
+        const username = document.getElementById('test-username').value;
+        const email = document.getElementById('test-email').value;
+        const currentPassword = document.getElementById('test-current-password').value;
+        const newPassword = document.getElementById('test-new-password').value;
+
+        if (username) data.username = username;
+        if (email) data.email = email;
+        if (currentPassword) data.currentPassword = currentPassword;
+        if (newPassword) data.password = newPassword;
+
+        fetch('/user/update', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            credentials: 'same-origin',
+            body: JSON.stringify(data)
+        })
+        .then(response => response.json())
+        .then(data => {
+            responseElement.textContent = JSON.stringify(data, null, 2);
+            responseElement.classList.remove('text-danger');
+            responseElement.classList.add('text-success');
+            
+            // Clear password fields after successful update
+            if (data.message) {
+                document.getElementById('test-current-password').value = '';
+                document.getElementById('test-new-password').value = '';
+            }
+        })
+        .catch(error => {
+            responseElement.textContent = 'Error: ' + error.message;
+            responseElement.classList.remove('text-success');
+            responseElement.classList.add('text-danger');
+        });
+    }
+
+    function loadCurrentData() {
+        fetch('/getuser', {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            credentials: 'same-origin'
+        })
+        .then(response => response.json())
+        .then(data => {
+            document.getElementById('test-username').value = data.username || '';
+            document.getElementById('test-email').value = data.email || '';
+            alert('Current data loaded successfully!');
+        })
+        .catch(error => {
+            alert('Error loading current data: ' + error.message);
+        });
+    }
+</script>
+{% endblock %}

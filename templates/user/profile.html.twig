@@ -1,0 +1,96 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}User Profile{% endblock %}
+
+{% block body %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h3>User Profile</h3>
+                </div>
+                <div class="card-body">
+                    <div id="user-info">
+                        <div class="text-center">
+                            <div class="spinner-border" role="status">
+                                <span class="visually-hidden">Loading...</span>
+                            </div>
+                            <p>Loading user information...</p>
+                        </div>
+                    </div>
+                    <div class="mt-3">
+                        <a href="{{ path('user_edit') }}" class="btn btn-primary">Edit Profile</a>
+                        <a href="{{ path('app_logout') }}" class="btn btn-secondary">Logout</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Fetch user information when page loads
+    document.addEventListener('DOMContentLoaded', function() {
+        fetch('/getuser', {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            credentials: 'same-origin'
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Not authenticated');
+            }
+            return response.json();
+        })
+        .then(data => {
+            // Display user information
+            const userInfoDiv = document.getElementById('user-info');
+            userInfoDiv.innerHTML = `
+                <table class="table">
+                    <tbody>
+                        <tr>
+                            <th>User ID:</th>
+                            <td>${data.id}</td>
+                        </tr>
+                        <tr>
+                            <th>Username:</th>
+                            <td>${data.username}</td>
+                        </tr>
+                        <tr>
+                            <th>Email:</th>
+                            <td>${data.email}</td>
+                        </tr>
+                        <tr>
+                            <th>Roles:</th>
+                            <td>${data.roles.join(', ')}</td>
+                        </tr>
+                        <tr>
+                            <th>Account Created:</th>
+                            <td>${data.createdAt}</td>
+                        </tr>
+                        <tr>
+                            <th>Email Verified:</th>
+                            <td>
+                                ${data.isVerified ? 
+                                    '<span class="badge bg-success">Yes</span>' : 
+                                    '<span class="badge bg-warning">No</span>'}
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            `;
+        })
+        .catch(error => {
+            const userInfoDiv = document.getElementById('user-info');
+            userInfoDiv.innerHTML = `
+                <div class="alert alert-danger" role="alert">
+                    Error loading user information: ${error.message}
+                </div>
+            `;
+        });
+    });
+</script>
+{% endblock %}
