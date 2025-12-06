@@ -133,6 +133,8 @@ document.addEventListener('DOMContentLoaded', function() {
     
     function addQuestion(collection) {
         const prototype = collection.getAttribute('data-prototype');
+        if (!prototype) return;
+        
         let index = parseInt(collection.getAttribute('data-index') || '0');
         
         // Replace '__name__' placeholder with the actual index
@@ -183,6 +185,8 @@ document.addEventListener('DOMContentLoaded', function() {
     
     function addAnswer(collection) {
         const prototype = collection.getAttribute('data-prototype');
+        if (!prototype) return;
+        
         let index = parseInt(collection.getAttribute('data-index') || '0');
         
         // Replace '__name__' placeholder with the actual index
