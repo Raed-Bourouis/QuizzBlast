@@ -91,7 +91,7 @@
 .form-label { margin-bottom: 0.5rem; }
 .form-check-input { width: 1em; height: 1em; margin-top: 0.25em; vertical-align: top; border: 1px solid rgba(0,0,0,.25); border-radius: 0.25em; }
 
-/* Responsive */
+/* Responsive - Bootstrap lg breakpoint (992px) */
 @media (max-width: 991px) {
   .navbar-nav { flex-direction: column; width: 100%; }
   .display-4 { font-size: 2.5rem; }

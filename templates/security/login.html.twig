@@ -22,7 +22,7 @@
                     {% if app.user %}
                         <div class="alert alert-info">
                             You are logged in as <strong>{{ app.user.userIdentifier }}</strong>. 
-                            <a href="{{ path('app_logout') }}">Logout</a>
+                            <a href="{{ logout_path() }}">Logout</a>
                         </div>
                     {% endif %}
 
