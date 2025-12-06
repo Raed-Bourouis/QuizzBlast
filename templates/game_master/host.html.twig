@@ -1,24 +1,45 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Game Master{% endblock %}
+{% block title %}Game Master - QuizzBlast{% endblock %}
 
 {% block body %}
-    <h1>Game Master</h1>
+<div class="container my-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card shadow">
+                <div class="card-body p-5 text-center">
+                    <h1 class="display-4 fw-bold mb-4">🎮 Game Master</h1>
+                    
+                    <div class="alert alert-primary mb-4" role="alert">
+                        <h3 class="h4 mb-3">Game Code</h3>
+                        <div class="display-3 fw-bold text-primary mb-2">{{ session.code }}</div>
+                        <p class="mb-0">Share this code with players to join the game</p>
+                    </div>
 
-    <p>Code de la partie : <strong>{{ session.code }}</strong></p>
+                    <div class="card mb-4">
+                        <div class="card-body">
+                            <h5 class="card-title fw-bold">Quiz</h5>
+                            <p class="card-text h5 text-muted">{{ session.quiz.title ?? 'Quiz' }}</p>
+                        </div>
+                    </div>
 
-    <p>
-        Quiz :
-        {{ session.quiz.title ?? 'Quiz' }}
-    </p>
+                    <div class="mb-4">
+                        <span class="badge 
+                            {% if session.status == 'ACTIVE' %}bg-success
+                            {% elseif session.status == 'WAITING' %}bg-warning
+                            {% else %}bg-secondary{% endif %} fs-5 px-4 py-2">
+                            Status: {{ session.status }}
+                        </span>
+                    </div>
 
-    <p>Statut : {{ session.status }}</p>
-
-    <p>Partage ce code avec les joueurs pour qu'ils puissent rejoindre la partie.</p>
-
-    <p>
-        <a href="{{ path('game_leaderboard', { code: session.code }) }}">
-            Voir le classement (leaderboard)
-        </a>
-    </p>
+                    <div class="d-grid gap-2">
+                        <a href="{{ path('game_leaderboard', { code: session.code }) }}" class="btn btn-primary btn-lg">
+                            📊 View Leaderboard
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 {% endblock %}
