@@ -2,102 +2,451 @@
 
 {% block title %}{{ quiz.title }} - QuizzBlast{% endblock %}
 
+{% block stylesheets %}
+    {{ parent() }}
+    <style>
+        .quiz-header-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 1.5rem;
+            padding: 3rem 2.5rem;
+            margin-bottom: 2.5rem;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2);
+            position: relative;
+            overflow: hidden;
+            animation: fadeInDown 0.6s ease-out;
+        }
+
+        .quiz-header-card::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -20%;
+            width: 400px;
+            height: 400px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+        }
+
+        .quiz-header-card h1 {
+            font-size: 2.5rem;
+            font-weight: 800;
+            margin-bottom: 1rem;
+            position: relative;
+            z-index: 1;
+        }
+
+        .quiz-header-card p {
+            font-size: 1.1rem;
+            opacity: 0.95;
+            line-height: 1.6;
+            position: relative;
+            z-index: 1;
+        }
+
+        .quiz-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 1.5rem;
+            margin-top: 2rem;
+            position: relative;
+            z-index: 1;
+        }
+
+        .quiz-stat-item {
+            background: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(10px);
+            padding: 1.25rem;
+            border-radius: 1rem;
+            text-align: center;
+            transition: transform 0.3s ease;
+        }
+
+        .quiz-stat-item:hover {
+            transform: translateY(-5px);
+            background: rgba(255, 255, 255, 0.25);
+        }
+
+        .quiz-stat-item i {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+            display: block;
+        }
+
+        .quiz-stat-label {
+            font-size: 0.85rem;
+            opacity: 0.9;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .quiz-stat-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-top: 0.25rem;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+            margin-top: 2rem;
+            position: relative;
+            z-index: 1;
+        }
+
+        .btn-back {
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.75rem;
+            background: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(10px);
+            border: 2px solid white;
+            color: white;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn-back:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateX(-5px);
+            color: white;
+        }
+
+        .section-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            animation: fadeInUp 0.6s ease-out 0.2s both;
+        }
+
+        .section-header h3 {
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: var(--text-dark);
+            margin: 0;
+        }
+
+        .section-header i {
+            font-size: 2rem;
+            color: var(--primary-color);
+        }
+
+        .question-card {
+            background: white;
+            border-radius: 1.25rem;
+            padding: 2rem;
+            margin-bottom: 1.75rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            transition: all 0.3s ease;
+            border-left: 5px solid transparent;
+            animation: fadeInUp 0.6s ease-out;
+        }
+
+        .question-card:hover {
+            transform: translateX(5px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.15);
+            border-left-color: var(--primary-color);
+        }
+
+        .question-header {
+            display: flex;
+            align-items: flex-start;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .question-number {
+            flex-shrink: 0;
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+            font-weight: 700;
+            box-shadow: 0 4px 6px -1px rgba(103, 126, 234, 0.4);
+        }
+
+        .question-text {
+            flex-grow: 1;
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--text-dark);
+            line-height: 1.5;
+        }
+
+        .question-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+            padding: 1rem;
+            background: var(--light-bg);
+            border-radius: 0.75rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .meta-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: var(--text-muted);
+            font-weight: 500;
+            font-size: 0.95rem;
+        }
+
+        .meta-item i {
+            font-size: 1.25rem;
+            color: var(--primary-color);
+        }
+
+        .answers-header {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--text-dark);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .answer-item {
+            padding: 1.25rem 1.5rem;
+            background: white;
+            border: 2px solid var(--border-color);
+            border-radius: 0.75rem;
+            margin-bottom: 0.75rem;
+            transition: all 0.3s ease;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .answer-item:hover {
+            border-color: var(--primary-color);
+            transform: translateX(5px);
+        }
+
+        .answer-item.correct {
+            background: linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, rgba(5, 150, 105, 0.05) 100%);
+            border-color: var(--success-color);
+            border-width: 3px;
+        }
+
+        .answer-text {
+            font-size: 1rem;
+            color: var(--text-dark);
+            font-weight: 500;
+        }
+
+        .answer-item.correct .answer-text {
+            font-weight: 700;
+        }
+
+        .correct-badge {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+            font-weight: 700;
+            font-size: 0.85rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .empty-state {
+            background: white;
+            border-radius: 1.5rem;
+            padding: 4rem 2rem;
+            text-align: center;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+
+        .empty-state-icon {
+            font-size: 5rem;
+            margin-bottom: 1.5rem;
+            display: inline-block;
+            animation: bounce 2s infinite;
+        }
+
+        @keyframes fadeInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes bounce {
+            0%, 100% {
+                transform: translateY(0);
+            }
+            50% {
+                transform: translateY(-20px);
+            }
+        }
+
+        .media-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: var(--primary-color);
+            text-decoration: none;
+            font-weight: 600;
+            padding: 0.5rem 1rem;
+            background: rgba(99, 102, 241, 0.1);
+            border-radius: 0.5rem;
+            transition: all 0.3s ease;
+        }
+
+        .media-link:hover {
+            background: rgba(99, 102, 241, 0.2);
+            transform: translateX(5px);
+        }
+    </style>
+{% endblock %}
+
 {% block body %}
 <div class="container my-5">
     <div class="row">
-        <div class="col-lg-10 mx-auto">
-            <div class="card shadow mb-4">
-                <div class="card-body p-4">
-                    <div class="d-flex justify-content-between align-items-start mb-4">
-                        <div class="flex-grow-1">
-                            <h1 class="h2 fw-bold mb-3">{{ quiz.title }}</h1>
-                            <p class="text-muted mb-3">{{ quiz.description }}</p>
-                            
-                            <div class="d-flex flex-wrap gap-2 mb-3">
-                                <span class="badge bg-primary">{{ quiz.category }}</span>
-                                <span class="badge 
-                                    {% if quiz.difficulty == 'EASY' %}bg-success
-                                    {% elseif quiz.difficulty == 'MEDIUM' %}bg-warning
-                                    {% else %}bg-danger{% endif %}">
-                                    {{ quiz.difficulty }}
-                                </span>
-                                <span class="badge bg-secondary">{{ quiz.questions|length }} Questions</span>
-                            </div>
+        <div class="col-lg-11 mx-auto">
+            <!-- Quiz Header -->
+            <div class="quiz-header-card">
+                <h1>{{ quiz.title }}</h1>
+                <p>{{ quiz.description }}</p>
+                
+                <div class="quiz-stats">
+                    <div class="quiz-stat-item">
+                        <i class="bi bi-folder-fill"></i>
+                        <div class="quiz-stat-label">Category</div>
+                        <div class="quiz-stat-value">{{ quiz.category }}</div>
+                    </div>
+                    <div class="quiz-stat-item">
+                        <i class="bi bi-speedometer2"></i>
+                        <div class="quiz-stat-label">Difficulty</div>
+                        <div class="quiz-stat-value">{{ quiz.difficulty }}</div>
+                    </div>
+                    <div class="quiz-stat-item">
+                        <i class="bi bi-question-circle-fill"></i>
+                        <div class="quiz-stat-label">Questions</div>
+                        <div class="quiz-stat-value">{{ quiz.questions|length }}</div>
+                    </div>
+                    <div class="quiz-stat-item">
+                        <i class="bi bi-calendar-check"></i>
+                        <div class="quiz-stat-label">Created</div>
+                        <div class="quiz-stat-value">{{ quiz.createdAt|date('M j') }}</div>
+                    </div>
+                </div>
 
-                            <small class="text-muted d-block">
-                                Created: {{ quiz.createdAt|date('F j, Y') }}
-                            </small>
-                        </div>
-                    </div>
-                    
-                    <div class="d-flex gap-2 flex-wrap">
-                        <a href="{{ path('app_quiz_index') }}" class="btn btn-outline-secondary">
-                            ← Back to Quizzes
+                <div class="action-buttons">
+                    <a href="{{ path('app_quiz_index') }}" class="btn-back">
+                        <i class="bi bi-arrow-left"></i> Back to Quizzes
+                    </a>
+                    {% if is_granted('ROLE_USER') and app.user == quiz.createdBy %}
+                        <a href="{{ path('app_quiz_edit', {id: quiz.id}) }}" class="btn btn-primary-custom">
+                            <i class="bi bi-pencil-fill"></i> Edit Quiz
                         </a>
-                        {% if is_granted('ROLE_USER') and app.user == quiz.createdBy %}
-                            <a href="{{ path('app_quiz_edit', {id: quiz.id}) }}" class="btn btn-warning">
-                                Edit Quiz
-                            </a>
-                            <form method="post" action="{{ path('app_quiz_delete', {id: quiz.id}) }}" style="display: inline;" onsubmit="return confirm('Are you sure you want to delete this quiz?');">
-                                <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ quiz.id) }}">
-                                <button type="submit" class="btn btn-danger">Delete Quiz</button>
-                            </form>
-                        {% endif %}
-                    </div>
+                        <form method="post" action="{{ path('app_quiz_delete', {id: quiz.id}) }}" style="display: inline;" onsubmit="return confirm('Are you sure you want to delete this quiz?');">
+                            <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ quiz.id) }}">
+                            <button type="submit" class="btn" style="padding: 0.75rem 1.5rem; border-radius: 0.75rem; background: rgba(239, 68, 68, 0.9); border: none; color: white; font-weight: 600;">
+                                <i class="bi bi-trash-fill"></i> Delete Quiz
+                            </button>
+                        </form>
+                    {% endif %}
                 </div>
             </div>
 
-            <h3 class="h4 fw-bold mb-3">Questions & Answers</h3>
+            <!-- Questions Section -->
+            <div class="section-header">
+                <i class="bi bi-list-check"></i>
+                <h3>Questions & Answers</h3>
+            </div>
             
             {% if quiz.questions|length > 0 %}
                 {% for question in quiz.questions %}
-                    <div class="card shadow-sm mb-3">
-                        <div class="card-body p-4">
-                            <div class="d-flex justify-content-between align-items-start mb-3">
-                                <h4 class="h5 fw-bold mb-0">
-                                    <span class="badge bg-primary me-2">Q{{ loop.index }}</span>
-                                    {{ question.text }}
-                                </h4>
+                    <div class="question-card" style="animation-delay: {{ loop.index * 0.1 }}s;">
+                        <div class="question-header">
+                            <div class="question-number">{{ loop.index }}</div>
+                            <div class="question-text">{{ question.text }}</div>
+                        </div>
+                        
+                        <div class="question-meta">
+                            <div class="meta-item">
+                                <i class="bi bi-tag-fill"></i>
+                                <span>{{ question.questionType }}</span>
                             </div>
-                            
-                            <div class="d-flex gap-3 mb-3 text-muted small">
-                                <span>📝 {{ question.questionType }}</span>
-                                <span>⭐ {{ question.points }} points</span>
-                                <span>⏱️ {{ question.timeLimit }}s</span>
-                                {% if question.mediaUrl %}
-                                    <span>🎬 <a href="{{ question.mediaUrl }}" target="_blank" class="text-decoration-none">View Media</a></span>
-                                {% endif %}
+                            <div class="meta-item">
+                                <i class="bi bi-star-fill"></i>
+                                <span>{{ question.points }} points</span>
                             </div>
-                            
-                            <h6 class="fw-bold mb-2">Answers:</h6>
-                            <div class="list-group">
-                                {% for answer in question.answers %}
-                                    <div class="list-group-item {% if answer.isCorrect %}list-group-item-success{% endif %}">
-                                        <div class="d-flex justify-content-between align-items-center">
-                                            <span>{{ answer.text }}</span>
-                                            {% if answer.isCorrect %}
-                                                <span class="badge bg-success">✓ Correct</span>
-                                            {% endif %}
-                                        </div>
-                                    </div>
-                                {% else %}
-                                    <div class="list-group-item text-muted">No answers defined</div>
-                                {% endfor %}
+                            <div class="meta-item">
+                                <i class="bi bi-clock-fill"></i>
+                                <span>{{ question.timeLimit }}s</span>
                             </div>
+                            {% if question.mediaUrl %}
+                                <div class="meta-item">
+                                    <i class="bi bi-play-circle-fill"></i>
+                                    <a href="{{ question.mediaUrl }}" target="_blank" class="media-link">
+                                        View Media <i class="bi bi-box-arrow-up-right"></i>
+                                    </a>
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="answers-header">
+                            <i class="bi bi-check2-square"></i>
+                            Answer Options:
+                        </div>
+                        <div class="answers-list">
+                            {% for answer in question.answers %}
+                                <div class="answer-item {% if answer.isCorrect %}correct{% endif %}">
+                                    <span class="answer-text">{{ answer.text }}</span>
+                                    {% if answer.isCorrect %}
+                                        <span class="correct-badge">
+                                            <i class="bi bi-check-circle-fill"></i> Correct Answer
+                                        </span>
+                                    {% endif %}
+                                </div>
+                            {% else %}
+                                <div class="answer-item">
+                                    <span class="answer-text text-muted">No answers defined for this question</span>
+                                </div>
+                            {% endfor %}
                         </div>
                     </div>
                 {% endfor %}
             {% else %}
-                <div class="card shadow-sm">
-                    <div class="card-body text-center py-5">
-                        <span class="display-4 mb-3 d-block">📝</span>
-                        <p class="text-muted">No questions have been added to this quiz yet.</p>
-                        {% if is_granted('ROLE_USER') and app.user == quiz.createdBy %}
-                            <a href="{{ path('app_quiz_edit', {id: quiz.id}) }}" class="btn btn-primary mt-2">
-                                Add Questions
-                            </a>
-                        {% endif %}
-                    </div>
+                <div class="empty-state">
+                    <div class="empty-state-icon">📝</div>
+                    <h3>No Questions Yet</h3>
+                    <p class="text-muted mb-4">This quiz doesn't have any questions yet.</p>
+                    {% if is_granted('ROLE_USER') and app.user == quiz.createdBy %}
+                        <a href="{{ path('app_quiz_edit', {id: quiz.id}) }}" class="btn btn-primary-custom btn-lg">
+                            <i class="bi bi-plus-circle-fill"></i> Add Questions
+                        </a>
+                    {% endif %}
                 </div>
             {% endif %}
         </div>

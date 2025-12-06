@@ -2,144 +2,542 @@
 
 {% block title %}Create New Quiz - QuizzBlast{% endblock %}
 
+{% block stylesheets %}
+    {{ parent() }}
+    <style>
+        .form-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem 0;
+        }
+
+        .form-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 1.5rem;
+            padding: 2.5rem;
+            margin-bottom: 2.5rem;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.2);
+            animation: fadeInDown 0.6s ease-out;
+        }
+
+        .form-header h1 {
+            font-size: 2.25rem;
+            font-weight: 800;
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .form-header h1 i {
+            font-size: 2.5rem;
+        }
+
+        .form-card {
+            background: white;
+            border-radius: 1.5rem;
+            padding: 2.5rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            animation: fadeInUp 0.6s ease-out;
+        }
+
+        .section-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary-color);
+            margin-bottom: 1.5rem;
+            padding-bottom: 0.75rem;
+            border-bottom: 3px solid var(--primary-color);
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .section-title i {
+            font-size: 1.75rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-label {
+            font-weight: 600;
+            color: var(--text-dark);
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .form-label i {
+            color: var(--primary-color);
+        }
+
+        .form-control, .form-select {
+            border: 2px solid var(--border-color);
+            border-radius: 0.75rem;
+            padding: 0.875rem 1rem;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .form-control:focus, .form-select:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1);
+        }
+
+        .form-check {
+            padding: 1rem;
+            background: var(--light-bg);
+            border-radius: 0.75rem;
+            margin-bottom: 1rem;
+        }
+
+        .form-check-input {
+            width: 1.35rem;
+            height: 1.35rem;
+            margin-top: 0.15rem;
+            cursor: pointer;
+            accent-color: var(--primary-color);
+        }
+
+        .form-check-label {
+            cursor: pointer;
+            font-weight: 500;
+            margin-left: 0.5rem;
+        }
+
+        .question-item {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 1) 0%, rgba(248, 250, 252, 1) 100%);
+            border: 3px solid var(--border-color);
+            border-radius: 1.5rem;
+            padding: 2.5rem;
+            margin-bottom: 2.5rem;
+            position: relative;
+            transition: all 0.4s ease;
+            animation: slideIn 0.4s ease-out;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .question-item:hover {
+            border-color: var(--primary-color);
+            box-shadow: 0 8px 20px rgba(103, 126, 234, 0.25);
+            transform: translateY(-2px);
+        }
+
+        .question-number-badge {
+            position: absolute;
+            top: -18px;
+            left: 25px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 0.65rem 1.5rem;
+            border-radius: 1rem;
+            font-weight: 700;
+            font-size: 1.05rem;
+            box-shadow: 0 6px 12px rgba(103, 126, 234, 0.5);
+            letter-spacing: 0.5px;
+        }
+
+        .question-text-group {
+            background: white;
+            border: 2px solid var(--border-color);
+            border-radius: 1rem;
+            padding: 1.25rem;
+            margin-bottom: 1.75rem;
+            transition: all 0.3s ease;
+        }
+
+        .question-text-group:focus-within {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1);
+        }
+
+        .question-meta-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.25rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .meta-field {
+            background: white;
+            border: 2px solid var(--border-color);
+            border-radius: 1rem;
+            padding: 1.25rem;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .meta-field:hover {
+            border-color: rgba(99, 102, 241, 0.5);
+        }
+
+        .meta-field:focus-within {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1);
+            transform: translateY(-2px);
+        }
+
+        .meta-field label {
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .meta-field label i {
+            font-size: 1rem;
+            color: var(--primary-color);
+        }
+
+        .meta-field .form-control,
+        .meta-field .form-select {
+            border: none;
+            padding: 0.5rem 0;
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--text-dark);
+            background: transparent;
+        }
+
+        .meta-field .form-control:focus,
+        .meta-field .form-select:focus {
+            outline: none;
+            box-shadow: none;
+        }
+
+        .media-url-group {
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.05) 0%, rgba(118, 75, 162, 0.05) 100%);
+            border: 2px dashed var(--border-color);
+            border-radius: 1rem;
+            padding: 1.25rem;
+            margin-bottom: 1.75rem;
+            transition: all 0.3s ease;
+        }
+
+        .media-url-group:hover {
+            border-color: var(--primary-color);
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.08) 0%, rgba(118, 75, 162, 0.08) 100%);
+        }
+
+        .media-url-group:focus-within {
+            border-style: solid;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1);
+        }
+
+        .media-url-group label {
+            font-weight: 600;
+            color: var(--text-dark);
+            margin-bottom: 0.75rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .media-url-group label i {
+            color: var(--primary-color);
+            font-size: 1.25rem;
+        }
+
+        .media-url-group .form-control {
+            border: none;
+            background: white;
+            border-radius: 0.75rem;
+            padding: 0.875rem 1rem;
+        }
+
+        .answer-item {
+            background: var(--light-bg);
+            border: 2px solid var(--border-color);
+            border-radius: 0.75rem;
+            padding: 1rem;
+            margin-bottom: 0.75rem;
+            transition: all 0.3s ease;
+        }
+
+        .answer-item:hover {
+            border-color: var(--primary-color);
+            background: white;
+        }
+
+        .btn-add-item {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+            border: none;
+            padding: 0.875rem 2rem;
+            border-radius: 0.75rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            box-shadow: 0 4px 6px -1px rgba(16, 185, 129, 0.4);
+        }
+
+        .btn-add-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 15px -3px rgba(16, 185, 129, 0.4);
+        }
+
+        .btn-remove-item {
+            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+            font-weight: 600;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+        }
+
+        .btn-remove-item:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 6px -1px rgba(239, 68, 68, 0.4);
+        }
+
+        .form-actions {
+            display: flex;
+            gap: 1rem;
+            justify-content: flex-end;
+            margin-top: 2rem;
+            padding-top: 2rem;
+            border-top: 2px solid var(--border-color);
+        }
+
+        .answers-header {
+            font-weight: 700;
+            color: var(--text-dark);
+            margin: 1.5rem 0 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .answers-header i {
+            color: var(--primary-color);
+            font-size: 1.25rem;
+        }
+
+        @keyframes fadeInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
+{% endblock %}
+
 {% block body %}
-<div class="container my-5">
-    <div class="row justify-content-center">
-        <div class="col-lg-10">
-            <div class="card shadow">
-                <div class="card-body p-4">
-                    <h1 class="h2 fw-bold mb-4">Create New Quiz</h1>
+<div class="container form-container">
+    <div class="form-header">
+        <h1>
+            <i class="bi bi-plus-circle-fill"></i>
+            Create New Quiz
+        </h1>
+        <p class="mb-0 opacity-90">Design an engaging quiz with custom questions and answers</p>
+    </div>
 
-                    {{ form_start(form) }}
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                {{ form_label(form.title, null, {'label_attr': {'class': 'form-label fw-bold'}}) }}
-                                {{ form_widget(form.title, {'attr': {'class': 'form-control'}}) }}
-                                {{ form_errors(form.title) }}
-                            </div>
+    <div class="form-card">
+        {{ form_start(form) }}
+            <div class="section-title">
+                <i class="bi bi-info-circle-fill"></i>
+                Quiz Information
+            </div>
 
-                            <div class="col-md-6 mb-3">
-                                {{ form_label(form.category, null, {'label_attr': {'class': 'form-label fw-bold'}}) }}
-                                {{ form_widget(form.category, {'attr': {'class': 'form-select'}}) }}
-                                {{ form_errors(form.category) }}
-                            </div>
-                        </div>
+            <div class="row">
+                <div class="col-md-6 form-group">
+                    {{ form_label(form.title, 'Quiz Title', {'label_attr': {'class': 'form-label'}}) }}
+                    {{ form_widget(form.title, {'attr': {'class': 'form-control', 'placeholder': 'Enter an engaging title...'}}) }}
+                    {{ form_errors(form.title) }}
+                </div>
 
-                        <div class="mb-3">
-                            {{ form_label(form.description, null, {'label_attr': {'class': 'form-label fw-bold'}}) }}
-                            {{ form_widget(form.description, {'attr': {'class': 'form-control', 'rows': '3'}}) }}
-                            {{ form_errors(form.description) }}
-                        </div>
-
-                        <div class="row">
-                            <div class="col-md-4 mb-3">
-                                {{ form_label(form.difficulty, null, {'label_attr': {'class': 'form-label fw-bold'}}) }}
-                                {{ form_widget(form.difficulty, {'attr': {'class': 'form-select'}}) }}
-                                {{ form_errors(form.difficulty) }}
-                            </div>
-
-                            <div class="col-md-4 mb-3">
-                                <div class="form-check mt-4 pt-2">
-                                    {{ form_widget(form.isPublic, {'attr': {'class': 'form-check-input'}}) }}
-                                    {{ form_label(form.isPublic, null, {'label_attr': {'class': 'form-check-label'}}) }}
-                                    {{ form_errors(form.isPublic) }}
-                                </div>
-                            </div>
-
-                            <div class="col-md-4 mb-3">
-                                <div class="form-check mt-4 pt-2">
-                                    {{ form_widget(form.isActive, {'attr': {'class': 'form-check-input'}}) }}
-                                    {{ form_label(form.isActive, null, {'label_attr': {'class': 'form-check-label'}}) }}
-                                    {{ form_errors(form.isActive) }}
-                                </div>
-                            </div>
-                        </div>
-
-                        <hr class="my-4">
-
-                        <h3 class="h4 fw-bold mb-3">Questions</h3>
-                        <div class="questions-collection" data-prototype="{{ form_widget(form.questions.vars.prototype)|e('html_attr') }}" data-index="{{ form.questions|length }}">
-                            {% for question in form.questions %}
-                                <div class="collection-item question-item mb-3">
-                                    <h5 class="fw-bold mb-3">Question #{{ loop.index }}</h5>
-                                    
-                                    <div class="mb-3">
-                                        {{ form_label(question.text, null, {'label_attr': {'class': 'form-label'}}) }}
-                                        {{ form_widget(question.text, {'attr': {'class': 'form-control'}}) }}
-                                        {{ form_errors(question.text) }}
-                                    </div>
-
-                                    <div class="row">
-                                        <div class="col-md-6 mb-3">
-                                            {{ form_label(question.questionType, null, {'label_attr': {'class': 'form-label'}}) }}
-                                            {{ form_widget(question.questionType, {'attr': {'class': 'form-select'}}) }}
-                                            {{ form_errors(question.questionType) }}
-                                        </div>
-                                        <div class="col-md-3 mb-3">
-                                            {{ form_label(question.points, null, {'label_attr': {'class': 'form-label'}}) }}
-                                            {{ form_widget(question.points, {'attr': {'class': 'form-control'}}) }}
-                                            {{ form_errors(question.points) }}
-                                        </div>
-                                        <div class="col-md-3 mb-3">
-                                            {{ form_label(question.timeLimit, null, {'label_attr': {'class': 'form-label'}}) }}
-                                            {{ form_widget(question.timeLimit, {'attr': {'class': 'form-control'}}) }}
-                                            {{ form_errors(question.timeLimit) }}
-                                        </div>
-                                    </div>
-
-                                    <div class="mb-3">
-                                        {{ form_label(question.mediaUrl, null, {'label_attr': {'class': 'form-label'}}) }}
-                                        {{ form_widget(question.mediaUrl, {'attr': {'class': 'form-control'}}) }}
-                                        {{ form_errors(question.mediaUrl) }}
-                                    </div>
-                                    
-                                    <h6 class="fw-bold mb-2">Answers</h6>
-                                    <div class="answers-collection" data-prototype="{{ form_widget(question.answers.vars.prototype)|e('html_attr') }}" data-index="{{ question.answers|length }}">
-                                        {% for answer in question.answers %}
-                                            <div class="nested-collection answer-item mb-2">
-                                                <div class="row align-items-end">
-                                                    <div class="col-md-7">
-                                                        {{ form_label(answer.text, 'Answer Text', {'label_attr': {'class': 'form-label small'}}) }}
-                                                        {{ form_widget(answer.text, {'attr': {'class': 'form-control form-control-sm'}}) }}
-                                                        {{ form_errors(answer.text) }}
-                                                    </div>
-                                                    <div class="col-md-2">
-                                                        <div class="form-check">
-                                                            {{ form_widget(answer.isCorrect, {'attr': {'class': 'form-check-input'}}) }}
-                                                            {{ form_label(answer.isCorrect, null, {'label_attr': {'class': 'form-check-label small'}}) }}
-                                                        </div>
-                                                    </div>
-                                                    <div class="col-md-2">
-                                                        {{ form_widget(answer.orderIndex, {'attr': {'class': 'form-control form-control-sm', 'placeholder': 'Order'}}) }}
-                                                    </div>
-                                                    <div class="col-md-1">
-                                                        <button type="button" class="btn btn-sm btn-danger remove-answer w-100">×</button>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        {% endfor %}
-                                    </div>
-                                    <button type="button" class="btn btn-sm btn-outline-primary add-answer mt-2">+ Add Answer</button>
-                                    <button type="button" class="btn btn-sm btn-outline-danger remove-question mt-2 float-end">Remove Question</button>
-                                </div>
-                            {% endfor %}
-                        </div>
-                        <button type="button" class="btn btn-success add-question mb-4">+ Add Question</button>
-
-                        <div class="d-flex gap-2 justify-content-end">
-                            <a href="{{ path('app_quiz_index') }}" class="btn btn-secondary">Cancel</a>
-                            <button type="submit" class="btn btn-primary">Create Quiz</button>
-                        </div>
-                    {{ form_end(form) }}
+                <div class="col-md-6 form-group">
+                    {{ form_label(form.category, 'Category', {'label_attr': {'class': 'form-label'}}) }}
+                    {{ form_widget(form.category, {'attr': {'class': 'form-select'}}) }}
+                    {{ form_errors(form.category) }}
                 </div>
             </div>
+
+            <div class="form-group">
+                {{ form_label(form.description, 'Description', {'label_attr': {'class': 'form-label'}}) }}
+                {{ form_widget(form.description, {'attr': {'class': 'form-control', 'rows': '4', 'placeholder': 'Describe what your quiz is about...'}}) }}
+                {{ form_errors(form.description) }}
+            </div>
+
+            <div class="row">
+                <div class="col-md-4 form-group">
+                    {{ form_label(form.difficulty, 'Difficulty Level', {'label_attr': {'class': 'form-label'}}) }}
+                    {{ form_widget(form.difficulty, {'attr': {'class': 'form-select'}}) }}
+                    {{ form_errors(form.difficulty) }}
+                </div>
+
+                <div class="col-md-4">
+                    <div class="form-check">
+                        {{ form_widget(form.isPublic, {'attr': {'class': 'form-check-input'}}) }}
+                        {{ form_label(form.isPublic, null, {'label_attr': {'class': 'form-check-label'}}) }}
+                        {{ form_errors(form.isPublic) }}
+                    </div>
+                </div>
+
+                <div class="col-md-4">
+                    <div class="form-check">
+                        {{ form_widget(form.isActive, {'attr': {'class': 'form-check-input'}}) }}
+                        {{ form_label(form.isActive, null, {'label_attr': {'class': 'form-check-label'}}) }}
+                        {{ form_errors(form.isActive) }}
+                    </div>
+                </div>
+            </div>
+    </div>
+
+    <div class="form-card">
+        <div class="section-title">
+            <i class="bi bi-question-circle-fill"></i>
+            Quiz Questions
         </div>
+
+        <div class="questions-collection" data-prototype="{{ form_widget(form.questions.vars.prototype)|e('html_attr') }}" data-index="{{ form.questions|length }}">
+            {% for question in form.questions %}
+                <div class="collection-item question-item" data-question-index="{{ loop.index }}">
+                    <div class="question-number-badge">
+                        <i class="bi bi-question-circle-fill"></i> Question #{{ loop.index }}
+                    </div>
+                    
+                    <div class="question-text-group">
+                        {{ form_label(question.text, 'Question Text', {'label_attr': {'class': 'form-label'}}) }}
+                        {{ form_widget(question.text, {'attr': {'class': 'form-control', 'placeholder': 'Enter your question here...', 'style': 'border: none; font-size: 1.1rem; font-weight: 600;'}}) }}
+                        {{ form_errors(question.text) }}
+                    </div>
+
+                    <div class="question-meta-row">
+                        <div class="meta-field">
+                            {{ form_label(question.questionType, null, {'label_attr': {'class': 'form-label'}}) }}
+                            <i class="bi bi-tag-fill"></i> Type
+                            {{ form_widget(question.questionType, {'attr': {'class': 'form-select'}}) }}
+                            {{ form_errors(question.questionType) }}
+                        </div>
+                        <div class="meta-field">
+                            <label>
+                                <i class="bi bi-star-fill"></i> Points
+                            </label>
+                            {{ form_widget(question.points, {'attr': {'class': 'form-control', 'placeholder': '100'}}) }}
+                            {{ form_errors(question.points) }}
+                        </div>
+                        <div class="meta-field">
+                            <label>
+                                <i class="bi bi-clock-fill"></i> Time Limit (s)
+                            </label>
+                            {{ form_widget(question.timeLimit, {'attr': {'class': 'form-control', 'placeholder': '30'}}) }}
+                            {{ form_errors(question.timeLimit) }}
+                        </div>
+                    </div>
+
+                    <div class="media-url-group">
+                        <label>
+                            <i class="bi bi-image-fill"></i>
+                            Media URL (Optional)
+                        </label>
+                        {{ form_widget(question.mediaUrl, {'attr': {'class': 'form-control', 'placeholder': 'https://example.com/image.jpg or video URL...'}}) }}
+                        {{ form_errors(question.mediaUrl) }}
+                        <small class="text-muted d-flex align-items-center gap-1 mt-2">
+                            <i class="bi bi-info-circle"></i>
+                            Add an image or video URL to make your question more engaging
+                        </small>
+                    </div>
+                    
+                    <div class="answers-header">
+                        <i class="bi bi-check-square-fill"></i>
+                        Answer Options
+                    </div>
+                    <div class="answers-collection" data-prototype="{{ form_widget(question.answers.vars.prototype)|e('html_attr') }}" data-index="{{ question.answers|length }}">
+                        {% for answer in question.answers %}
+                            <div class="nested-collection answer-item">
+                                <div class="row align-items-end">
+                                    <div class="col-md-7">
+                                        {{ form_label(answer.text, 'Answer Text', {'label_attr': {'class': 'form-label small'}}) }}
+                                        {{ form_widget(answer.text, {'attr': {'class': 'form-control form-control-sm'}}) }}
+                                        {{ form_errors(answer.text) }}
+                                    </div>
+                                    <div class="col-md-2">
+                                        <div class="form-check">
+                                            {{ form_widget(answer.isCorrect, {'attr': {'class': 'form-check-input'}}) }}
+                                            {{ form_label(answer.isCorrect, null, {'label_attr': {'class': 'form-check-label small'}}) }}
+                                        </div>
+                                    </div>
+                                    <div class="col-md-2">
+                                        {{ form_widget(answer.orderIndex, {'attr': {'class': 'form-control form-control-sm', 'placeholder': 'Order'}}) }}
+                                    </div>
+                                    <div class="col-md-1">
+                                        <button type="button" class="btn btn-remove-item remove-answer w-100">
+                                            <i class="bi bi-x-lg"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                    <button type="button" class="btn btn-sm btn-outline-primary add-answer mt-2">
+                        <i class="bi bi-plus-circle"></i> Add Answer
+                    </button>
+                    <button type="button" class="btn btn-remove-item remove-question mt-2 float-end">
+                        <i class="bi bi-trash-fill"></i> Remove Question
+                    </button>
+                </div>
+            {% endfor %}
+        </div>
+        <button type="button" class="btn btn-add-item add-question mb-4">
+            <i class="bi bi-plus-circle-fill"></i> Add New Question
+        </button>
+
+        <div class="form-actions">
+            <a href="{{ path('app_quiz_index') }}" class="btn btn-outline-custom">
+                <i class="bi bi-x-circle"></i> Cancel
+            </a>
+            <button type="submit" class="btn btn-primary-custom">
+                <i class="bi bi-check-circle-fill"></i> Create Quiz
+            </button>
+        </div>
+        {{ form_end(form) }}
     </div>
 </div>
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // Function to add a new question
     const questionsCollection = document.querySelector('.questions-collection');
     const addQuestionButton = document.querySelector('.add-question');
     
@@ -149,14 +547,12 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
     
-    // Add event listeners to existing remove question buttons
     document.querySelectorAll('.remove-question').forEach(function(button) {
         button.addEventListener('click', function() {
             removeQuestion(button);
         });
     });
     
-    // Add event listeners to existing add answer buttons
     document.querySelectorAll('.add-answer').forEach(function(button) {
         button.addEventListener('click', function() {
             const questionItem = button.closest('.question-item');
@@ -165,7 +561,6 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
     
-    // Add event listeners to existing remove answer buttons
     document.querySelectorAll('.remove-answer').forEach(function(button) {
         button.addEventListener('click', function() {
             removeAnswer(button);
@@ -177,51 +572,46 @@ document.addEventListener('DOMContentLoaded', function() {
         if (!prototype) return;
         
         let index = parseInt(collection.getAttribute('data-index') || '0');
-        
-        // Replace '__name__' placeholder with the actual index
         let newForm = prototype.replace(/__name__/g, index);
         
-        // Create a wrapper div for the new question
         const wrapper = document.createElement('div');
         wrapper.classList.add('collection-item', 'question-item');
-        wrapper.innerHTML = newForm;
+        wrapper.setAttribute('data-question-index', index + 1);
+        wrapper.innerHTML = `<div class="question-number-badge">Question #${index + 1}</div>` + newForm;
         
-        // Find the answers collection in the new form and update its data-index
         const answersCollection = wrapper.querySelector('.answers-collection');
         if (answersCollection) {
             answersCollection.setAttribute('data-index', '0');
             
-            // Add "Add Answer" button
             const addAnswerBtn = document.createElement('button');
             addAnswerBtn.type = 'button';
-            addAnswerBtn.className = 'btn add-answer';
-            addAnswerBtn.textContent = 'Add Answer';
+            addAnswerBtn.className = 'btn btn-sm btn-outline-primary add-answer mt-2';
+            addAnswerBtn.innerHTML = '<i class="bi bi-plus-circle"></i> Add Answer';
             addAnswerBtn.addEventListener('click', function() {
                 addAnswer(answersCollection);
             });
             wrapper.appendChild(addAnswerBtn);
         }
         
-        // Add "Remove Question" button
         const removeBtn = document.createElement('button');
         removeBtn.type = 'button';
-        removeBtn.className = 'btn btn-secondary remove-question';
-        removeBtn.textContent = 'Remove Question';
+        removeBtn.className = 'btn btn-remove-item remove-question mt-2 float-end';
+        removeBtn.innerHTML = '<i class="bi bi-trash-fill"></i> Remove Question';
         removeBtn.addEventListener('click', function() {
             removeQuestion(removeBtn);
         });
         wrapper.appendChild(removeBtn);
         
-        // Add the new question to the collection
         collection.appendChild(wrapper);
-        
-        // Increment the index
         collection.setAttribute('data-index', index + 1);
+        
+        updateQuestionNumbers();
     }
     
     function removeQuestion(button) {
         const questionItem = button.closest('.question-item');
         questionItem.remove();
+        updateQuestionNumbers();
     }
     
     function addAnswer(collection) {
@@ -229,35 +619,43 @@ document.addEventListener('DOMContentLoaded', function() {
         if (!prototype) return;
         
         let index = parseInt(collection.getAttribute('data-index') || '0');
-        
-        // Replace '__name__' placeholder with the actual index
         let newForm = prototype.replace(/__name__/g, index);
         
-        // Create a wrapper div for the new answer
         const wrapper = document.createElement('div');
         wrapper.classList.add('nested-collection', 'answer-item');
         wrapper.innerHTML = newForm;
         
-        // Add "Remove Answer" button
         const removeBtn = document.createElement('button');
         removeBtn.type = 'button';
-        removeBtn.className = 'btn btn-secondary remove-answer';
-        removeBtn.textContent = 'Remove Answer';
+        removeBtn.className = 'btn btn-remove-item remove-answer';
+        removeBtn.innerHTML = '<i class="bi bi-x-lg"></i>';
         removeBtn.addEventListener('click', function() {
             removeAnswer(removeBtn);
         });
-        wrapper.appendChild(removeBtn);
         
-        // Add the new answer to the collection
+        const lastCol = wrapper.querySelector('.row > div:last-child');
+        if (lastCol) {
+            lastCol.innerHTML = '';
+            lastCol.appendChild(removeBtn);
+        }
+        
         collection.appendChild(wrapper);
-        
-        // Increment the index
         collection.setAttribute('data-index', index + 1);
     }
     
     function removeAnswer(button) {
         const answerItem = button.closest('.answer-item');
         answerItem.remove();
+    }
+    
+    function updateQuestionNumbers() {
+        const questionItems = document.querySelectorAll('.question-item');
+        questionItems.forEach((item, index) => {
+            const badge = item.querySelector('.question-number-badge');
+            if (badge) {
+                badge.textContent = `Question #${index + 1}`;
+            }
+        });
     }
 });
 </script>
