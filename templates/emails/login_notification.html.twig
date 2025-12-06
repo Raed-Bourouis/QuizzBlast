@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+            border-radius: 10px 10px 0 0;
+        }
+        .content {
+            background: #f9f9f9;
+            padding: 30px;
+            border-radius: 0 0 10px 10px;
+        }
+        .alert-box {
+            background: #fff3cd;
+            border: 1px solid #ffc107;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 20px 0;
+        }
+        .info-box {
+            background: white;
+            padding: 15px;
+            border-left: 4px solid #667eea;
+            margin: 20px 0;
+        }
+        .footer {
+            text-align: center;
+            color: #666;
+            font-size: 12px;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🔐 New Login Detected</h1>
+    </div>
+    
+    <div class="content">
+        <h2>Hello {{ user.username }}!</h2>
+        
+        <p>We detected a new login to your QuizzBlast account.</p>
+        
+        <div class="info-box">
+            <strong>Login Details:</strong><br>
+            <strong>Time:</strong> {{ loginTime|date('F d, Y \\a\\t h:i A') }}<br>
+            <strong>Account:</strong> {{ user.email }}<br>
+            {% if ipAddress %}
+            <strong>IP Address:</strong> {{ ipAddress }}<br>
+            {% endif %}
+        </div>
+        
+        <div class="alert-box">
+            <strong>⚠️ Was this you?</strong><br>
+            If you didn't log in at this time, please secure your account immediately:
+            <ul>
+                <li>Change your password</li>
+                <li>Review your account activity</li>
+                <li>Contact support if you notice suspicious activity</li>
+            </ul>
+        </div>
+        
+        <p>If this was you, you can safely ignore this email. We're just keeping you informed about your account security.</p>
+        
+        <p>Stay secure!<br>
+        <strong>The QuizzBlast Team</strong></p>
+    </div>
+    
+    <div class="footer">
+        <p>This is an automated security notification from QuizzBlast.</p>
+        <p>&copy; {{ 'now'|date('Y') }} QuizzBlast. All rights reserved.</p>
+    </div>
+</body>
+</html>
