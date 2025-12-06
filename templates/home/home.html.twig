@@ -1,1 +1,58 @@
-<h1>Welcome to Home page Zaineb </h1>
+{% extends 'base.html.twig' %}
+
+{% block title %}Home - QuizzBlast{% endblock %}
+
+{% block body %}
+<div class="hero-section text-center">
+    <div class="container">
+        <h1 class="display-4 fw-bold mb-4">Welcome to QuizzBlast! 🚀</h1>
+        <p class="lead mb-4">Create, share, and take interactive quizzes with ease</p>
+        <div class="d-flex gap-3 justify-content-center">
+            <a href="{{ path('app_quiz_index') }}" class="btn btn-light btn-lg">Browse Quizzes</a>
+            {% if is_granted('ROLE_USER') %}
+                <a href="{{ path('app_quiz_new') }}" class="btn btn-outline-light btn-lg">Create Quiz</a>
+            {% else %}
+                <a href="{{ path('app_register') }}" class="btn btn-outline-light btn-lg">Get Started</a>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<div class="container my-5">
+    <div class="row g-4">
+        <div class="col-md-4">
+            <div class="card h-100 text-center p-4">
+                <div class="card-body">
+                    <div class="mb-3">
+                        <span class="display-4">📝</span>
+                    </div>
+                    <h5 class="card-title fw-bold">Create Quizzes</h5>
+                    <p class="card-text text-muted">Build engaging quizzes with multiple question types and difficulty levels.</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card h-100 text-center p-4">
+                <div class="card-body">
+                    <div class="mb-3">
+                        <span class="display-4">🎯</span>
+                    </div>
+                    <h5 class="card-title fw-bold">Track Progress</h5>
+                    <p class="card-text text-muted">Monitor performance and see detailed results for all quiz attempts.</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card h-100 text-center p-4">
+                <div class="card-body">
+                    <div class="mb-3">
+                        <span class="display-4">🏆</span>
+                    </div>
+                    <h5 class="card-title fw-bold">Compete & Learn</h5>
+                    <p class="card-text text-muted">Challenge friends and climb the leaderboard while learning.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
