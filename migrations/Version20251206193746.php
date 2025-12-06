@@ -14,15 +14,15 @@ final class Version20251206193746 extends AbstractMigration
 {
     public function getDescription(): string
     {
-        return '';
+        return 'Add missing columns: question_type to question table, category to quiz table, and is_verified to user table';
     }
 
     public function up(Schema $schema): void
     {
         // this up() migration is auto-generated, please modify it to your needs
-        $this->addSql('ALTER TABLE question ADD COLUMN question_type VARCHAR(50) NOT NULL');
-        $this->addSql('ALTER TABLE quiz ADD COLUMN category VARCHAR(50) NOT NULL');
-        $this->addSql('ALTER TABLE user ADD COLUMN is_verified BOOLEAN NOT NULL');
+        $this->addSql('ALTER TABLE question ADD COLUMN question_type VARCHAR(50) NOT NULL DEFAULT \'single_choice\'');
+        $this->addSql('ALTER TABLE quiz ADD COLUMN category VARCHAR(50) NOT NULL DEFAULT \'General\'');
+        $this->addSql('ALTER TABLE user ADD COLUMN is_verified BOOLEAN NOT NULL DEFAULT 0');
     }
 
     public function down(Schema $schema): void
