@@ -3,36 +3,26 @@
 {% block title %}Leaderboard{% endblock %}
 
 {% block body %}
-    <h1>Leaderboard – Code {{ session.code }}</h1>
+    <h1>Leaderboard - Session {{ session.code }}</h1>
 
-    <table border="1" cellpadding="6">
+    <table>
         <thead>
         <tr>
-            <th>#</th>
+            <th>Position</th>
             <th>Joueur</th>
-            <th>Score total</th>
+            <th>Score</th>
         </tr>
         </thead>
         <tbody>
         {% for participant in participants %}
             <tr>
                 <td>{{ loop.index }}</td>
-                <td>
-                    {% if participant.nickname %}
-                        {{ participant.nickname }}
-                    {% elseif participant.user and participant.user.username is defined %}
-                        {{ participant.user.username }}
-                    {% else %}
-                        Joueur {{ loop.index }}
-                    {% endif %}
-                </td>
+                <td>{{ participant.nickname }}</td>
                 <td>{{ participant.totalScore }}</td>
-            </tr>
-        {% else %}
-            <tr>
-                <td colspan="3">Aucun participant pour cette session.</td>
             </tr>
         {% endfor %}
         </tbody>
     </table>
+
+    <a href="{{ path('game_start', {'id': session.quiz.id}) }}">Retour au Game Master</a>
 {% endblock %}
