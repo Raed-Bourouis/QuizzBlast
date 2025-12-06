@@ -1,40 +1,66 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Quizzes{% endblock %}
+{% block title %}Browse Quizzes - QuizzBlast{% endblock %}
 
 {% block body %}
-<style>
-    .quiz-list { margin: 1em auto; max-width: 800px; width: 95%; font: 18px/1.5 sans-serif; }
-    .quiz-card { border: 1px solid #ddd; padding: 1em; margin-bottom: 1em; border-radius: 8px; }
-    .quiz-card h3 { margin-top: 0; }
-    .quiz-meta { color: #666; font-size: 0.9em; }
-    .btn { display: inline-block; padding: 0.5em 1em; background: #007bff; color: white; text-decoration: none; border-radius: 4px; margin-right: 0.5em; }
-    .btn-secondary { background: #6c757d; }
-</style>
-
-<div class="quiz-list">
-    <h1>Public Quizzes</h1>
-    
-    {% if is_granted('ROLE_USER') %}
-        <p><a href="{{ path('app_quiz_new') }}" class="btn">Create New Quiz</a></p>
-        <p><a href="{{ path('app_quiz_my_quizzes') }}" class="btn btn-secondary">My Quizzes</a></p>
-    {% endif %}
+<div class="container my-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="display-5 fw-bold">Public Quizzes</h1>
+        {% if is_granted('ROLE_USER') %}
+            <div>
+                <a href="{{ path('app_quiz_new') }}" class="btn btn-primary me-2">
+                    + Create New Quiz
+                </a>
+                <a href="{{ path('app_quiz_my_quizzes') }}" class="btn btn-outline-secondary">
+                    My Quizzes
+                </a>
+            </div>
+        {% endif %}
+    </div>
 
     {% if quizzes|length > 0 %}
-        {% for quiz in quizzes %}
-            <div class="quiz-card">
-                <h3>{{ quiz.title }}</h3>
-                <p>{{ quiz.description }}</p>
-                <p class="quiz-meta">
-                    Category: {{ quiz.category }} | 
-                    Difficulty: {{ quiz.difficulty }} |
-                    Questions: {{ quiz.questions|length }}
-                </p>
-                <a href="{{ path('app_quiz_show', {id: quiz.id}) }}" class="btn">View Quiz</a>
-            </div>
-        {% endfor %}
+        <div class="row g-4">
+            {% for quiz in quizzes %}
+                <div class="col-md-6 col-lg-4">
+                    <div class="card quiz-card h-100">
+                        <div class="card-body d-flex flex-column">
+                            <h5 class="card-title fw-bold mb-3">{{ quiz.title }}</h5>
+                            <p class="card-text text-muted flex-grow-1">{{ quiz.description|length > 100 ? quiz.description|slice(0, 100) ~ '...' : quiz.description }}</p>
+                            
+                            <div class="mb-3">
+                                <span class="badge bg-primary me-2">{{ quiz.category }}</span>
+                                <span class="badge 
+                                    {% if quiz.difficulty == 'EASY' %}bg-success
+                                    {% elseif quiz.difficulty == 'MEDIUM' %}bg-warning
+                                    {% else %}bg-danger{% endif %}">
+                                    {{ quiz.difficulty }}
+                                </span>
+                            </div>
+                            
+                            <div class="d-flex justify-content-between align-items-center">
+                                <small class="text-muted">
+                                    📝 {{ quiz.questions|length }} question{{ quiz.questions|length != 1 ? 's' : '' }}
+                                </small>
+                                <a href="{{ path('app_quiz_show', {id: quiz.id}) }}" class="btn btn-sm btn-primary">
+                                    View Quiz →
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
     {% else %}
-        <p>No public quizzes available yet.</p>
+        <div class="text-center py-5">
+            <div class="mb-4">
+                <span class="display-1">📭</span>
+            </div>
+            <h3 class="mb-3">No public quizzes available yet</h3>
+            <p class="text-muted mb-4">Be the first to create an engaging quiz!</p>
+            {% if is_granted('ROLE_USER') %}
+                <a href="{{ path('app_quiz_new') }}" class="btn btn-primary">Create Your First Quiz</a>
+            {% endif %}
+        </div>
     {% endif %}
 </div>
 {% endblock %}

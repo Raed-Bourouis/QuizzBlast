@@ -1,74 +1,106 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}{{ quiz.title }}{% endblock %}
+{% block title %}{{ quiz.title }} - QuizzBlast{% endblock %}
 
 {% block body %}
-<style>
-    .quiz-detail { margin: 1em auto; max-width: 800px; width: 95%; font: 18px/1.5 sans-serif; }
-    .quiz-header { border-bottom: 2px solid #ddd; padding-bottom: 1em; margin-bottom: 1em; }
-    .quiz-meta { color: #666; font-size: 0.9em; }
-    .question-card { border: 1px solid #ddd; padding: 1em; margin-bottom: 1em; border-radius: 8px; }
-    .question-card h3 { margin-top: 0; }
-    .answer-list { list-style: none; padding: 0; }
-    .answer-item { padding: 0.5em; margin: 0.25em 0; background: #f9f9f9; border-radius: 4px; }
-    .answer-item.correct { background: #d4edda; border: 1px solid #c3e6cb; }
-    .btn { display: inline-block; padding: 0.5em 1em; background: #007bff; color: white; text-decoration: none; border-radius: 4px; margin-right: 0.5em; border: none; cursor: pointer; }
-    .btn-secondary { background: #6c757d; }
-    .btn-warning { background: #ffc107; color: #212529; }
-    .btn-danger { background: #dc3545; }
-</style>
+<div class="container my-5">
+    <div class="row">
+        <div class="col-lg-10 mx-auto">
+            <div class="card shadow mb-4">
+                <div class="card-body p-4">
+                    <div class="d-flex justify-content-between align-items-start mb-4">
+                        <div class="flex-grow-1">
+                            <h1 class="h2 fw-bold mb-3">{{ quiz.title }}</h1>
+                            <p class="text-muted mb-3">{{ quiz.description }}</p>
+                            
+                            <div class="d-flex flex-wrap gap-2 mb-3">
+                                <span class="badge bg-primary">{{ quiz.category }}</span>
+                                <span class="badge 
+                                    {% if quiz.difficulty == 'EASY' %}bg-success
+                                    {% elseif quiz.difficulty == 'MEDIUM' %}bg-warning
+                                    {% else %}bg-danger{% endif %}">
+                                    {{ quiz.difficulty }}
+                                </span>
+                                <span class="badge bg-secondary">{{ quiz.questions|length }} Questions</span>
+                            </div>
 
-<div class="quiz-detail">
-    <div class="quiz-header">
-        <h1>{{ quiz.title }}</h1>
-        <p>{{ quiz.description }}</p>
-        <p class="quiz-meta">
-            Category: {{ quiz.category }} | 
-            Difficulty: {{ quiz.difficulty }} |
-            Questions: {{ quiz.questions|length }} |
-            Created: {{ quiz.createdAt|date('Y-m-d H:i') }}
-        </p>
-        
-        <p>
-            <a href="{{ path('app_quiz_index') }}" class="btn btn-secondary">Back to Quizzes</a>
-            {% if is_granted('ROLE_USER') and app.user == quiz.createdBy %}
-                <a href="{{ path('app_quiz_edit', {id: quiz.id}) }}" class="btn btn-warning">Edit</a>
-                <form method="post" action="{{ path('app_quiz_delete', {id: quiz.id}) }}" style="display: inline;" onsubmit="return confirm('Are you sure you want to delete this quiz?');">
-                    <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ quiz.id) }}">
-                    <button type="submit" class="btn btn-danger">Delete</button>
-                </form>
-            {% endif %}
-        </p>
-    </div>
-
-    <h2>Questions</h2>
-    
-    {% if quiz.questions|length > 0 %}
-        {% for question in quiz.questions %}
-            <div class="question-card">
-                <h3>Question {{ loop.index }}: {{ question.text }}</h3>
-                <p class="quiz-meta">
-                    Type: {{ question.questionType }} | 
-                    Points: {{ question.points }} |
-                    Time Limit: {{ question.timeLimit }}s
-                    {% if question.mediaUrl %}| Media: <a href="{{ question.mediaUrl }}" target="_blank">View</a>{% endif %}
-                </p>
-                
-                <h4>Answers:</h4>
-                <ul class="answer-list">
-                    {% for answer in question.answers %}
-                        <li class="answer-item {% if answer.isCorrect %}correct{% endif %}">
-                            {{ answer.text }}
-                            {% if answer.isCorrect %} ✓{% endif %}
-                        </li>
-                    {% else %}
-                        <li>No answers defined</li>
-                    {% endfor %}
-                </ul>
+                            <small class="text-muted d-block">
+                                Created: {{ quiz.createdAt|date('F j, Y') }}
+                            </small>
+                        </div>
+                    </div>
+                    
+                    <div class="d-flex gap-2 flex-wrap">
+                        <a href="{{ path('app_quiz_index') }}" class="btn btn-outline-secondary">
+                            ← Back to Quizzes
+                        </a>
+                        {% if is_granted('ROLE_USER') and app.user == quiz.createdBy %}
+                            <a href="{{ path('app_quiz_edit', {id: quiz.id}) }}" class="btn btn-warning">
+                                Edit Quiz
+                            </a>
+                            <form method="post" action="{{ path('app_quiz_delete', {id: quiz.id}) }}" style="display: inline;" onsubmit="return confirm('Are you sure you want to delete this quiz?');">
+                                <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ quiz.id) }}">
+                                <button type="submit" class="btn btn-danger">Delete Quiz</button>
+                            </form>
+                        {% endif %}
+                    </div>
+                </div>
             </div>
-        {% endfor %}
-    {% else %}
-        <p>No questions have been added to this quiz yet.</p>
-    {% endif %}
+
+            <h3 class="h4 fw-bold mb-3">Questions & Answers</h3>
+            
+            {% if quiz.questions|length > 0 %}
+                {% for question in quiz.questions %}
+                    <div class="card shadow-sm mb-3">
+                        <div class="card-body p-4">
+                            <div class="d-flex justify-content-between align-items-start mb-3">
+                                <h4 class="h5 fw-bold mb-0">
+                                    <span class="badge bg-primary me-2">Q{{ loop.index }}</span>
+                                    {{ question.text }}
+                                </h4>
+                            </div>
+                            
+                            <div class="d-flex gap-3 mb-3 text-muted small">
+                                <span>📝 {{ question.questionType }}</span>
+                                <span>⭐ {{ question.points }} points</span>
+                                <span>⏱️ {{ question.timeLimit }}s</span>
+                                {% if question.mediaUrl %}
+                                    <span>🎬 <a href="{{ question.mediaUrl }}" target="_blank" class="text-decoration-none">View Media</a></span>
+                                {% endif %}
+                            </div>
+                            
+                            <h6 class="fw-bold mb-2">Answers:</h6>
+                            <div class="list-group">
+                                {% for answer in question.answers %}
+                                    <div class="list-group-item {% if answer.isCorrect %}list-group-item-success{% endif %}">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <span>{{ answer.text }}</span>
+                                            {% if answer.isCorrect %}
+                                                <span class="badge bg-success">✓ Correct</span>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                {% else %}
+                                    <div class="list-group-item text-muted">No answers defined</div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            {% else %}
+                <div class="card shadow-sm">
+                    <div class="card-body text-center py-5">
+                        <span class="display-4 mb-3 d-block">📝</span>
+                        <p class="text-muted">No questions have been added to this quiz yet.</p>
+                        {% if is_granted('ROLE_USER') and app.user == quiz.createdBy %}
+                            <a href="{{ path('app_quiz_edit', {id: quiz.id}) }}" class="btn btn-primary mt-2">
+                                Add Questions
+                            </a>
+                        {% endif %}
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+    </div>
 </div>
 {% endblock %}

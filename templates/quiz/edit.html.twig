@@ -1,99 +1,140 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Edit Quiz - {{ quiz.title }}{% endblock %}
+{% block title %}Edit Quiz - {{ quiz.title }} - QuizzBlast{% endblock %}
 
 {% block body %}
-<style>
-    .quiz-form { margin: 1em auto; max-width: 800px; width: 95%; font: 18px/1.5 sans-serif; }
-    .form-group { margin-bottom: 1em; }
-    .form-group label { display: block; font-weight: bold; margin-bottom: 0.25em; }
-    .form-group input, .form-group textarea, .form-group select { width: 100%; padding: 0.5em; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box; }
-    .form-group textarea { min-height: 100px; }
-    .checkbox-group { display: flex; align-items: center; gap: 0.5em; }
-    .checkbox-group input { width: auto; }
-    .btn { display: inline-block; padding: 0.5em 1em; background: #007bff; color: white; text-decoration: none; border-radius: 4px; margin-right: 0.5em; border: none; cursor: pointer; }
-    .btn-secondary { background: #6c757d; }
-    .btn:hover { opacity: 0.9; }
-    .add-question { margin-top: 1em; background: #28a745; }
-    .add-answer { background: #17a2b8; margin-top: 0.5em; }
-    .remove-question, .remove-answer { background: #dc3545; margin-top: 0.5em; }
-    .collection-item { border: 1px solid #ddd; padding: 1em; margin-bottom: 1em; border-radius: 4px; background: #f9f9f9; }
-    .nested-collection { border: 1px solid #ccc; padding: 0.5em; margin: 0.5em 0; border-radius: 4px; background: #fff; }
-</style>
+<div class="container my-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <div class="card shadow">
+                <div class="card-body p-4">
+                    <h1 class="h2 fw-bold mb-4">Edit Quiz: {{ quiz.title }}</h1>
 
-<div class="quiz-form">
-    <h1>Edit Quiz: {{ quiz.title }}</h1>
-
-    {{ form_start(form) }}
-        <div class="form-group">
-            {{ form_label(form.title) }}
-            {{ form_widget(form.title) }}
-            {{ form_errors(form.title) }}
-        </div>
-
-        <div class="form-group">
-            {{ form_label(form.description) }}
-            {{ form_widget(form.description) }}
-            {{ form_errors(form.description) }}
-        </div>
-
-        <div class="form-group">
-            {{ form_label(form.category) }}
-            {{ form_widget(form.category) }}
-            {{ form_errors(form.category) }}
-        </div>
-
-        <div class="form-group">
-            {{ form_label(form.difficulty) }}
-            {{ form_widget(form.difficulty) }}
-            {{ form_errors(form.difficulty) }}
-        </div>
-
-        <div class="form-group checkbox-group">
-            {{ form_widget(form.isPublic) }}
-            {{ form_label(form.isPublic) }}
-            {{ form_errors(form.isPublic) }}
-        </div>
-
-        <div class="form-group checkbox-group">
-            {{ form_widget(form.isActive) }}
-            {{ form_label(form.isActive) }}
-            {{ form_errors(form.isActive) }}
-        </div>
-
-        <h2>Questions</h2>
-        <div class="questions-collection" data-prototype="{{ form_widget(form.questions.vars.prototype)|e('html_attr') }}" data-index="{{ form.questions|length }}">
-            {% for question in form.questions %}
-                <div class="collection-item question-item">
-                    {{ form_row(question.text) }}
-                    {{ form_row(question.questionType) }}
-                    {{ form_row(question.points) }}
-                    {{ form_row(question.timeLimit) }}
-                    {{ form_row(question.mediaUrl) }}
-                    
-                    <h4>Answers</h4>
-                    <div class="answers-collection" data-prototype="{{ form_widget(question.answers.vars.prototype)|e('html_attr') }}" data-index="{{ question.answers|length }}">
-                        {% for answer in question.answers %}
-                            <div class="nested-collection answer-item">
-                                {{ form_row(answer.text) }}
-                                {{ form_row(answer.isCorrect) }}
-                                {{ form_row(answer.orderIndex) }}
-                                <button type="button" class="btn btn-secondary remove-answer">Remove Answer</button>
+                    {{ form_start(form) }}
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                {{ form_label(form.title, null, {'label_attr': {'class': 'form-label fw-bold'}}) }}
+                                {{ form_widget(form.title, {'attr': {'class': 'form-control'}}) }}
+                                {{ form_errors(form.title) }}
                             </div>
-                        {% endfor %}
-                    </div>
-                    <button type="button" class="btn add-answer">Add Answer</button>
-                    <button type="button" class="btn btn-secondary remove-question">Remove Question</button>
-                </div>
-            {% endfor %}
-        </div>
-        <button type="button" class="btn add-question">Add Question</button>
 
-        <div class="form-group">
-            <button type="submit" class="btn">Update Quiz</button>
-            <a href="{{ path('app_quiz_show', {id: quiz.id}) }}" class="btn btn-secondary">Cancel</a>
+                            <div class="col-md-6 mb-3">
+                                {{ form_label(form.category, null, {'label_attr': {'class': 'form-label fw-bold'}}) }}
+                                {{ form_widget(form.category, {'attr': {'class': 'form-select'}}) }}
+                                {{ form_errors(form.category) }}
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            {{ form_label(form.description, null, {'label_attr': {'class': 'form-label fw-bold'}}) }}
+                            {{ form_widget(form.description, {'attr': {'class': 'form-control', 'rows': '3'}}) }}
+                            {{ form_errors(form.description) }}
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                {{ form_label(form.difficulty, null, {'label_attr': {'class': 'form-label fw-bold'}}) }}
+                                {{ form_widget(form.difficulty, {'attr': {'class': 'form-select'}}) }}
+                                {{ form_errors(form.difficulty) }}
+                            </div>
+
+                            <div class="col-md-4 mb-3">
+                                <div class="form-check mt-4 pt-2">
+                                    {{ form_widget(form.isPublic, {'attr': {'class': 'form-check-input'}}) }}
+                                    {{ form_label(form.isPublic, null, {'label_attr': {'class': 'form-check-label'}}) }}
+                                    {{ form_errors(form.isPublic) }}
+                                </div>
+                            </div>
+
+                            <div class="col-md-4 mb-3">
+                                <div class="form-check mt-4 pt-2">
+                                    {{ form_widget(form.isActive, {'attr': {'class': 'form-check-input'}}) }}
+                                    {{ form_label(form.isActive, null, {'label_attr': {'class': 'form-check-label'}}) }}
+                                    {{ form_errors(form.isActive) }}
+                                </div>
+                            </div>
+                        </div>
+
+                        <hr class="my-4">
+
+                        <h3 class="h4 fw-bold mb-3">Questions</h3>
+                        <div class="questions-collection" data-prototype="{{ form_widget(form.questions.vars.prototype)|e('html_attr') }}" data-index="{{ form.questions|length }}">
+                            {% for question in form.questions %}
+                                <div class="collection-item question-item mb-3">
+                                    <h5 class="fw-bold mb-3">Question #{{ loop.index }}</h5>
+                                    
+                                    <div class="mb-3">
+                                        {{ form_label(question.text, null, {'label_attr': {'class': 'form-label'}}) }}
+                                        {{ form_widget(question.text, {'attr': {'class': 'form-control'}}) }}
+                                        {{ form_errors(question.text) }}
+                                    </div>
+
+                                    <div class="row">
+                                        <div class="col-md-6 mb-3">
+                                            {{ form_label(question.questionType, null, {'label_attr': {'class': 'form-label'}}) }}
+                                            {{ form_widget(question.questionType, {'attr': {'class': 'form-select'}}) }}
+                                            {{ form_errors(question.questionType) }}
+                                        </div>
+                                        <div class="col-md-3 mb-3">
+                                            {{ form_label(question.points, null, {'label_attr': {'class': 'form-label'}}) }}
+                                            {{ form_widget(question.points, {'attr': {'class': 'form-control'}}) }}
+                                            {{ form_errors(question.points) }}
+                                        </div>
+                                        <div class="col-md-3 mb-3">
+                                            {{ form_label(question.timeLimit, null, {'label_attr': {'class': 'form-label'}}) }}
+                                            {{ form_widget(question.timeLimit, {'attr': {'class': 'form-control'}}) }}
+                                            {{ form_errors(question.timeLimit) }}
+                                        </div>
+                                    </div>
+
+                                    <div class="mb-3">
+                                        {{ form_label(question.mediaUrl, null, {'label_attr': {'class': 'form-label'}}) }}
+                                        {{ form_widget(question.mediaUrl, {'attr': {'class': 'form-control'}}) }}
+                                        {{ form_errors(question.mediaUrl) }}
+                                    </div>
+                                    
+                                    <h6 class="fw-bold mb-2">Answers</h6>
+                                    <div class="answers-collection" data-prototype="{{ form_widget(question.answers.vars.prototype)|e('html_attr') }}" data-index="{{ question.answers|length }}">
+                                        {% for answer in question.answers %}
+                                            <div class="nested-collection answer-item mb-2">
+                                                <div class="row align-items-end">
+                                                    <div class="col-md-7">
+                                                        {{ form_label(answer.text, 'Answer Text', {'label_attr': {'class': 'form-label small'}}) }}
+                                                        {{ form_widget(answer.text, {'attr': {'class': 'form-control form-control-sm'}}) }}
+                                                        {{ form_errors(answer.text) }}
+                                                    </div>
+                                                    <div class="col-md-2">
+                                                        <div class="form-check">
+                                                            {{ form_widget(answer.isCorrect, {'attr': {'class': 'form-check-input'}}) }}
+                                                            {{ form_label(answer.isCorrect, null, {'label_attr': {'class': 'form-check-label small'}}) }}
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-md-2">
+                                                        {{ form_widget(answer.orderIndex, {'attr': {'class': 'form-control form-control-sm', 'placeholder': 'Order'}}) }}
+                                                    </div>
+                                                    <div class="col-md-1">
+                                                        <button type="button" class="btn btn-sm btn-danger remove-answer w-100">×</button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        {% endfor %}
+                                    </div>
+                                    <button type="button" class="btn btn-sm btn-outline-primary add-answer mt-2">+ Add Answer</button>
+                                    <button type="button" class="btn btn-sm btn-outline-danger remove-question mt-2 float-end">Remove Question</button>
+                                </div>
+                            {% endfor %}
+                        </div>
+                        <button type="button" class="btn btn-success add-question mb-4">+ Add Question</button>
+
+                        <div class="d-flex gap-2 justify-content-end">
+                            <a href="{{ path('app_quiz_show', {id: quiz.id}) }}" class="btn btn-secondary">Cancel</a>
+                            <button type="submit" class="btn btn-primary">Update Quiz</button>
+                        </div>
+                    {{ form_end(form) }}
+                </div>
+            </div>
         </div>
-    {{ form_end(form) }}
+    </div>
 </div>
 
 <script>
