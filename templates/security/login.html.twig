@@ -2,81 +2,279 @@
 
 {% block title %}Login - QuizzBlast{% endblock %}
 
+{% block stylesheets %}
+    {{ parent() }}
+    <style>
+        .login-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 80vh;
+            padding: 2rem 0;
+        }
+        
+        .login-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 1.5rem;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            overflow: hidden;
+            max-width: 450px;
+            width: 100%;
+            animation: fadeInUp 0.6s ease-out;
+        }
+        
+        .login-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 2.5rem 2rem;
+            text-align: center;
+        }
+        
+        .login-header h1 {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+        
+        .login-header p {
+            opacity: 0.9;
+            margin-bottom: 0;
+        }
+        
+        .login-body {
+            padding: 2.5rem 2rem;
+        }
+        
+        .form-floating {
+            margin-bottom: 1.5rem;
+        }
+        
+        .form-floating label {
+            color: var(--text-muted);
+        }
+        
+        .form-control {
+            border: 2px solid var(--border-color);
+            border-radius: 0.75rem;
+            padding: 1rem 0.75rem;
+            height: auto;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+        
+        .form-control:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1);
+        }
+        
+        .btn-login {
+            width: 100%;
+            padding: 1rem;
+            font-size: 1.1rem;
+            font-weight: 600;
+            border-radius: 0.75rem;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            color: white;
+            transition: all 0.3s ease;
+            margin-top: 0.5rem;
+        }
+        
+        .btn-login:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px -5px rgba(103, 126, 234, 0.5);
+        }
+        
+        .checkbox-wrapper {
+            display: flex;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+        
+        .checkbox-wrapper input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            margin-right: 0.75rem;
+            cursor: pointer;
+            accent-color: var(--primary-color);
+        }
+        
+        .checkbox-wrapper label {
+            margin-bottom: 0;
+            cursor: pointer;
+            user-select: none;
+        }
+        
+        .divider {
+            text-align: center;
+            margin: 1.5rem 0;
+            position: relative;
+        }
+        
+        .divider::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: var(--border-color);
+        }
+        
+        .divider span {
+            background: white;
+            padding: 0 1rem;
+            position: relative;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+        
+        .register-link {
+            text-align: center;
+            padding-top: 1rem;
+            color: var(--text-muted);
+        }
+        
+        .register-link a {
+            color: var(--primary-color);
+            text-decoration: none;
+            font-weight: 600;
+            transition: color 0.3s ease;
+        }
+        
+        .register-link a:hover {
+            color: var(--primary-dark);
+            text-decoration: underline;
+        }
+        
+        .alert-custom {
+            border-radius: 0.75rem;
+            border: none;
+            padding: 1rem 1.25rem;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+        
+        .alert-danger {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+        
+        .alert-info {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+        
+        .input-icon {
+            position: relative;
+        }
+        
+        .input-icon i {
+            position: absolute;
+            left: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-muted);
+            font-size: 1.25rem;
+            z-index: 10;
+        }
+        
+        .input-icon .form-control {
+            padding-left: 3rem;
+        }
+    </style>
+{% endblock %}
+
 {% block body %}
-<div class="container">
-    <div class="row justify-content-center my-5">
-        <div class="col-md-6 col-lg-5">
-            <div class="card shadow">
-                <div class="card-body p-5">
-                    <div class="text-center mb-4">
-                        <h2 class="fw-bold">Welcome Back!</h2>
-                        <p class="text-muted">Sign in to your account</p>
-                    </div>
-
-                    {% if error %}
-                        <div class="alert alert-danger">
-                            {{ error.messageKey|trans(error.messageData, 'security') }}
-                        </div>
-                    {% endif %}
-
-                    {% if app.user %}
-                        <div class="alert alert-info">
-                            You are logged in as <strong>{{ app.user.userIdentifier }}</strong>. 
-                            <a href="{{ logout_path() }}">Logout</a>
-                        </div>
-                    {% endif %}
-
-                    <form method="post">
-                        <div class="mb-3">
-                            <label for="inputUsername" class="form-label">Username</label>
-                            <input type="text" 
-                                   value="{{ last_username }}" 
-                                   name="username" 
-                                   id="inputUsername" 
-                                   class="form-control form-control-lg" 
-                                   autocomplete="username" 
-                                   required 
-                                   autofocus
-                                   placeholder="Enter your username">
-                        </div>
-
-                        <div class="mb-3">
-                            <label for="inputPassword" class="form-label">Password</label>
-                            <input type="password" 
-                                   name="password" 
-                                   id="inputPassword" 
-                                   class="form-control form-control-lg" 
-                                   autocomplete="current-password" 
-                                   required
-                                   placeholder="Enter your password">
-                        </div>
-
-                        <input type="hidden" name="_csrf_token" value="{{ csrf_token('authenticate') }}">
-
-                        <div class="form-check mb-3">
-                            <input type="checkbox" 
-                                   name="_remember_me" 
-                                   class="form-check-input" 
-                                   id="rememberMe">
-                            <label class="form-check-label" for="rememberMe">
-                                Remember me
-                            </label>
-                        </div>
-
-                        <div class="d-grid">
-                            <button class="btn btn-primary btn-lg" type="submit">
-                                Sign In
-                            </button>
-                        </div>
-                    </form>
-
-                    <div class="text-center mt-4">
-                        <p class="text-muted">Don't have an account? 
-                            <a href="{{ path('app_register') }}" class="text-decoration-none fw-bold">Sign up</a>
-                        </p>
+<div class="container login-container">
+    <div class="login-card">
+        <div class="login-header">
+            <h1>
+                <i class="bi bi-lightning-charge-fill"></i>
+                Welcome Back!
+            </h1>
+            <p>Login to continue your quiz journey</p>
+        </div>
+        
+        <div class="login-body">
+            {% if error %}
+                <div class="alert alert-danger alert-custom">
+                    <i class="bi bi-exclamation-circle-fill fs-5"></i>
+                    <div>
+                        <strong>Login Failed!</strong><br>
+                        {{ error.messageKey|trans(error.messageData, 'security') }}
                     </div>
                 </div>
-            </div>
+            {% endif %}
+
+            {% if app.user %}
+                <div class="alert alert-info alert-custom">
+                    <i class="bi bi-info-circle-fill fs-5"></i>
+                    <div>
+                        You are logged in as <strong>{{ app.user.userIdentifier }}</strong>
+                        <br>
+                        <a href="{{ path('app_logout') }}" class="text-decoration-underline">Logout</a>
+                    </div>
+                </div>
+            {% endif %}
+
+            <form method="post">
+                <div class="form-floating input-icon">
+                    <i class="bi bi-person-fill"></i>
+                    <input 
+                        type="text" 
+                        class="form-control" 
+                        id="inputUsername" 
+                        name="username"
+                        value="{{ last_username }}" 
+                        placeholder="Username or Email"
+                        autocomplete="username" 
+                        required 
+                        autofocus
+                    >
+                    <label for="inputUsername">Username or Email</label>
+                </div>
+
+                <div class="form-floating input-icon">
+                    <i class="bi bi-lock-fill"></i>
+                    <input 
+                        type="password" 
+                        class="form-control" 
+                        id="inputPassword" 
+                        name="password"
+                        placeholder="Password"
+                        autocomplete="current-password" 
+                        required
+                    >
+                    <label for="inputPassword">Password</label>
+                </div>
+
+                <input type="hidden" name="_csrf_token" value="{{ csrf_token('authenticate') }}">
+
+                <div class="checkbox-wrapper">
+                    <input type="checkbox" id="remember_me" name="_remember_me">
+                    <label for="remember_me">Remember me</label>
+                </div>
+
+                <button class="btn btn-login" type="submit">
+                    <i class="bi bi-box-arrow-in-right me-2"></i>
+                    Sign In
+                </button>
+
+                <div class="divider">
+                    <span>Don't have an account?</span>
+                </div>
+
+                <div class="register-link">
+                    <a href="{{ path('app_register') }}">
+                        <i class="bi bi-person-plus-fill me-1"></i>
+                        Create a new account
+                    </a>
+                </div>
+            </form>
         </div>
     </div>
 </div>

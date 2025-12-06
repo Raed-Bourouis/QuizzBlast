@@ -1,58 +1,409 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Home - QuizzBlast{% endblock %}
+{% block title %}Welcome to QuizzBlast - Interactive Quiz Platform{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <style>
+        /* Hero Section */
+        .hero-section {
+            padding: 5rem 0;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .hero-content {
+            position: relative;
+            z-index: 2;
+        }
+        
+        .hero-title {
+            font-size: 4rem;
+            font-weight: 800;
+            color: white;
+            margin-bottom: 1.5rem;
+            animation: fadeInUp 0.8s ease-out;
+            text-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        .hero-subtitle {
+            font-size: 1.5rem;
+            color: rgba(255, 255, 255, 0.95);
+            margin-bottom: 2.5rem;
+            animation: fadeInUp 0.8s ease-out 0.2s both;
+        }
+        
+        .hero-buttons {
+            display: flex;
+            gap: 1.5rem;
+            justify-content: center;
+            flex-wrap: wrap;
+            animation: fadeInUp 0.8s ease-out 0.4s both;
+        }
+        
+        .btn-hero {
+            padding: 1.25rem 3rem;
+            font-size: 1.25rem;
+            font-weight: 700;
+            border-radius: 1rem;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.75rem;
+            text-decoration: none;
+            border: none;
+        }
+        
+        .btn-hero-primary {
+            background: white;
+            color: var(--primary-color);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+        }
+        
+        .btn-hero-primary:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.3);
+            color: var(--primary-dark);
+        }
+        
+        .btn-hero-secondary {
+            background: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(10px);
+            color: white;
+            border: 2px solid white;
+        }
+        
+        .btn-hero-secondary:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateY(-5px);
+            color: white;
+        }
+        
+        /* Features Section */
+        .features-section {
+            padding: 5rem 0;
+        }
+        
+        .section-title {
+            text-align: center;
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            color: white;
+        }
+        
+        .section-subtitle {
+            text-align: center;
+            font-size: 1.2rem;
+            color: rgba(255, 255, 255, 0.8);
+            margin-bottom: 4rem;
+        }
+        
+        .feature-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 1.5rem;
+            padding: 2.5rem;
+            text-align: center;
+            transition: all 0.3s ease;
+            height: 100%;
+            border: none;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        }
+        
+        .feature-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+        }
+        
+        .feature-icon {
+            width: 100px;
+            height: 100px;
+            margin: 0 auto 1.5rem;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3rem;
+            color: white;
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.4);
+        }
+        
+        .feature-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            color: var(--text-dark);
+        }
+        
+        .feature-description {
+            color: var(--text-muted);
+            line-height: 1.6;
+        }
+        
+        /* Stats Section */
+        .stats-section {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            padding: 4rem 0;
+            margin: 4rem 0;
+            border-radius: 2rem;
+        }
+        
+        .stat-item {
+            text-align: center;
+            padding: 2rem;
+        }
+        
+        .stat-number {
+            font-size: 3.5rem;
+            font-weight: 800;
+            color: white;
+            margin-bottom: 0.5rem;
+            text-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        .stat-label {
+            font-size: 1.2rem;
+            color: rgba(255, 255, 255, 0.9);
+            font-weight: 500;
+        }
+        
+        /* CTA Section */
+        .cta-section {
+            padding: 5rem 0;
+            text-align: center;
+        }
+        
+        .cta-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 2rem;
+            padding: 4rem 3rem;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+        }
+        
+        .cta-title {
+            font-size: 2.5rem;
+            font-weight: 800;
+            margin-bottom: 1.5rem;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .cta-description {
+            font-size: 1.2rem;
+            color: var(--text-muted);
+            margin-bottom: 2.5rem;
+        }
+        
+        /* Animations */
+        .fade-in {
+            animation: fadeInUp 0.8s ease-out;
+        }
+        
+        @media (max-width: 768px) {
+            .hero-title {
+                font-size: 2.5rem;
+            }
+            
+            .hero-subtitle {
+                font-size: 1.2rem;
+            }
+            
+            .btn-hero {
+                padding: 1rem 2rem;
+                font-size: 1.1rem;
+            }
+            
+            .section-title {
+                font-size: 2rem;
+            }
+            
+            .stat-number {
+                font-size: 2.5rem;
+            }
+        }
+    </style>
+{% endblock %}
 
 {% block body %}
-<div class="hero-section text-center">
-    <div class="container">
-        <h1 class="display-4 fw-bold mb-4">Welcome to QuizzBlast! 🚀</h1>
-        <p class="lead mb-4">Create, share, and take interactive quizzes with ease</p>
-        <div class="d-flex gap-3 justify-content-center">
-            <a href="{{ path('app_quiz_index') }}" class="btn btn-light btn-lg">Browse Quizzes</a>
-            {% if is_granted('ROLE_USER') %}
-                <a href="{{ path('app_quiz_new') }}" class="btn btn-outline-light btn-lg">Create Quiz</a>
-            {% else %}
-                <a href="{{ path('app_register') }}" class="btn btn-outline-light btn-lg">Get Started</a>
-            {% endif %}
+    <!-- Hero Section -->
+    <section class="hero-section">
+        <div class="container">
+            <div class="hero-content">
+                <h1 class="hero-title">
+                    Welcome to <span style="display: inline-flex; align-items: center; gap: 0.5rem;">
+                        <i class="bi bi-lightning-charge-fill"></i>QuizzBlast
+                    </span>
+                </h1>
+                <p class="hero-subtitle">
+                    Create, host, and play interactive quizzes with real-time multiplayer features.<br>
+                    {% if app.user %}
+                        Welcome back, <strong>{{ app.user.username }}</strong>!
+                    {% else %}
+                        Join thousands of quiz enthusiasts today!
+                    {% endif %}
+                </p>
+                <div class="hero-buttons">
+                    {% if app.user %}
+                        <a href="{{ path('app_quiz_new') }}" class="btn btn-hero btn-hero-primary">
+                            <i class="bi bi-plus-circle-fill"></i>
+                            Create a Quiz
+                        </a>
+                        <a href="{{ path('app_quiz_index') }}" class="btn btn-hero btn-hero-secondary">
+                            <i class="bi bi-collection-fill"></i>
+                            Browse Quizzes
+                        </a>
+                    {% else %}
+                        <a href="{{ path('app_register') }}" class="btn btn-hero btn-hero-primary">
+                            <i class="bi bi-rocket-takeoff-fill"></i>
+                            Get Started Free
+                        </a>
+                        <a href="{{ path('app_login') }}" class="btn btn-hero btn-hero-secondary">
+                            <i class="bi bi-box-arrow-in-right"></i>
+                            Login
+                        </a>
+                    {% endif %}
+                </div>
+            </div>
         </div>
-    </div>
-</div>
+    </section>
 
-<div class="container my-5">
-    <div class="row g-4">
-        <div class="col-md-4">
-            <div class="card h-100 text-center p-4">
-                <div class="card-body">
-                    <div class="mb-3">
-                        <span class="display-4">📝</span>
+    <!-- Stats Section -->
+    <section class="container">
+        <div class="stats-section fade-in">
+            <div class="row">
+                <div class="col-md-4">
+                    <div class="stat-item">
+                        <div class="stat-number">
+                            <i class="bi bi-people-fill"></i> 1000+
+                        </div>
+                        <div class="stat-label">Active Users</div>
                     </div>
-                    <h5 class="card-title fw-bold">Create Quizzes</h5>
-                    <p class="card-text text-muted">Build engaging quizzes with multiple question types and difficulty levels.</p>
+                </div>
+                <div class="col-md-4">
+                    <div class="stat-item">
+                        <div class="stat-number">
+                            <i class="bi bi-collection-fill"></i> 500+
+                        </div>
+                        <div class="stat-label">Quizzes Created</div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="stat-item">
+                        <div class="stat-number">
+                            <i class="bi bi-controller"></i> 2500+
+                        </div>
+                        <div class="stat-label">Games Played</div>
+                    </div>
                 </div>
             </div>
         </div>
-        <div class="col-md-4">
-            <div class="card h-100 text-center p-4">
-                <div class="card-body">
-                    <div class="mb-3">
-                        <span class="display-4">🎯</span>
+    </section>
+
+    <!-- Features Section -->
+    <section class="features-section">
+        <div class="container">
+            <h2 class="section-title fade-in">Why Choose QuizzBlast?</h2>
+            <p class="section-subtitle fade-in">Everything you need to create engaging quiz experiences</p>
+            
+            <div class="row g-4">
+                <div class="col-md-4 fade-in">
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="bi bi-lightning-charge-fill"></i>
+                        </div>
+                        <h3 class="feature-title">Real-Time Gameplay</h3>
+                        <p class="feature-description">
+                            Host live quiz sessions with instant feedback and real-time leaderboards that keep players engaged.
+                        </p>
                     </div>
-                    <h5 class="card-title fw-bold">Track Progress</h5>
-                    <p class="card-text text-muted">Monitor performance and see detailed results for all quiz attempts.</p>
+                </div>
+                
+                <div class="col-md-4 fade-in">
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="bi bi-palette-fill"></i>
+                        </div>
+                        <h3 class="feature-title">Easy to Create</h3>
+                        <p class="feature-description">
+                            Build beautiful quizzes in minutes with our intuitive quiz builder. No technical skills required!
+                        </p>
+                    </div>
+                </div>
+                
+                <div class="col-md-4 fade-in">
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="bi bi-trophy-fill"></i>
+                        </div>
+                        <h3 class="feature-title">Competitive Fun</h3>
+                        <p class="feature-description">
+                            Points, rankings, and leaderboards make learning competitive and fun for everyone involved.
+                        </p>
+                    </div>
+                </div>
+                
+                <div class="col-md-4 fade-in">
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="bi bi-people-fill"></i>
+                        </div>
+                        <h3 class="feature-title">Multiplayer Mode</h3>
+                        <p class="feature-description">
+                            Play with friends, classmates, or colleagues. Support for unlimited participants per session.
+                        </p>
+                    </div>
+                </div>
+                
+                <div class="col-md-4 fade-in">
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="bi bi-bar-chart-fill"></i>
+                        </div>
+                        <h3 class="feature-title">Track Progress</h3>
+                        <p class="feature-description">
+                            Detailed analytics and statistics help you understand performance and identify areas for improvement.
+                        </p>
+                    </div>
+                </div>
+                
+                <div class="col-md-4 fade-in">
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="bi bi-phone-fill"></i>
+                        </div>
+                        <h3 class="feature-title">Mobile Friendly</h3>
+                        <p class="feature-description">
+                            Fully responsive design works seamlessly on any device - desktop, tablet, or smartphone.
+                        </p>
+                    </div>
                 </div>
             </div>
         </div>
-        <div class="col-md-4">
-            <div class="card h-100 text-center p-4">
-                <div class="card-body">
-                    <div class="mb-3">
-                        <span class="display-4">🏆</span>
-                    </div>
-                    <h5 class="card-title fw-bold">Compete & Learn</h5>
-                    <p class="card-text text-muted">Challenge friends and climb the leaderboard while learning.</p>
-                </div>
+    </section>
+
+    <!-- CTA Section -->
+    {% if not app.user %}
+    <section class="cta-section">
+        <div class="container">
+            <div class="cta-card fade-in">
+                <h2 class="cta-title">Ready to Get Started?</h2>
+                <p class="cta-description">
+                    Join QuizzBlast today and start creating amazing interactive quiz experiences.<br>
+                    It's free, fun, and takes less than a minute to sign up!
+                </p>
+                <a href="{{ path('app_register') }}" class="btn btn-hero btn-hero-primary">
+                    <i class="bi bi-rocket-takeoff-fill"></i>
+                    Create Your Free Account
+                </a>
             </div>
         </div>
-    </div>
-</div>
+    </section>
+    {% endif %}
 {% endblock %}

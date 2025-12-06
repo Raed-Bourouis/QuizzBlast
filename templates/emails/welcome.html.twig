@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+            border-radius: 10px 10px 0 0;
+        }
+        .content {
+            background: #f9f9f9;
+            padding: 30px;
+            border-radius: 0 0 10px 10px;
+        }
+        .button {
+            display: inline-block;
+            padding: 12px 30px;
+            background: #667eea;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            margin: 20px 0;
+        }
+        .footer {
+            text-align: center;
+            color: #666;
+            font-size: 12px;
+            margin-top: 20px;
+        }
+        .info-box {
+            background: white;
+            padding: 15px;
+            border-left: 4px solid #667eea;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🎉 Welcome to QuizzBlast!</h1>
+    </div>
+    
+    <div class="content">
+        <h2>Hello {{ user.username }}!</h2>
+        
+        <p>We're excited to have you on board! You've just logged into QuizzBlast.</p>
+        
+        <div class="info-box">
+            <strong>Login Details:</strong><br>
+            <strong>Time:</strong> {{ loginTime|date('F d, Y \\a\\t h:i A') }}<br>
+            <strong>Username:</strong> {{ user.username }}<br>
+            <strong>Email:</strong> {{ user.email }}
+        </div>
+        
+        <p>With QuizzBlast, you can:</p>
+        <ul>
+            <li>✅ Create engaging quizzes</li>
+            <li>✅ Host live quiz sessions</li>
+            <li>✅ Track player performance</li>
+            <li>✅ View real-time leaderboards</li>
+        </ul>
+        
+        <p>Need help getting started? Check out our documentation or contact support.</p>
+        
+        <p>Happy Quizzing!<br>
+        <strong>The QuizzBlast Team</strong></p>
+    </div>
+    
+    <div class="footer">
+        <p>This is an automated message from QuizzBlast. Please do not reply to this email.</p>
+        <p>&copy; {{ 'now'|date('Y') }} QuizzBlast. All rights reserved.</p>
+    </div>
+</body>
+</html>

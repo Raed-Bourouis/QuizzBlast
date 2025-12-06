@@ -1,0 +1,421 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}My Profile - QuizzBlast{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <style>
+        .profile-container {
+            padding: 3rem 0;
+        }
+        
+        .profile-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 1.5rem;
+            padding: 3rem 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+            animation: fadeInUp 0.6s ease-out;
+        }
+        
+        .profile-avatar {
+            width: 120px;
+            height: 120px;
+            background: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 4rem;
+            margin: 0 auto 1.5rem;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+        }
+        
+        .profile-header h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+        
+        .profile-header p {
+            opacity: 0.9;
+            font-size: 1.1rem;
+        }
+        
+        .stats-row {
+            margin-top: 2rem;
+        }
+        
+        .stat-card {
+            background: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(10px);
+            border-radius: 1rem;
+            padding: 1.5rem;
+            text-align: center;
+            transition: transform 0.3s ease;
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .stat-card i {
+            font-size: 2.5rem;
+            margin-bottom: 0.75rem;
+            opacity: 0.9;
+        }
+        
+        .stat-number {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 0.25rem;
+        }
+        
+        .stat-label {
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+        
+        .info-card {
+            background: white;
+            border-radius: 1.5rem;
+            padding: 2rem;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            animation: fadeInUp 0.6s ease-out 0.2s both;
+        }
+        
+        .info-card h3 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+            color: var(--primary-color);
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+        
+        .info-item {
+            display: flex;
+            align-items: center;
+            padding: 1.25rem;
+            border-bottom: 1px solid var(--border-color);
+            transition: background 0.3s ease;
+        }
+        
+        .info-item:last-child {
+            border-bottom: none;
+        }
+        
+        .info-item:hover {
+            background: var(--light-bg);
+            border-radius: 0.75rem;
+        }
+        
+        .info-icon {
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.5rem;
+            margin-right: 1.25rem;
+            flex-shrink: 0;
+        }
+        
+        .info-content {
+            flex-grow: 1;
+        }
+        
+        .info-label {
+            font-size: 0.875rem;
+            color: var(--text-muted);
+            margin-bottom: 0.25rem;
+        }
+        
+        .info-value {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--text-dark);
+        }
+        
+        .badge-verified {
+            background: var(--success-color);
+            color: white;
+            padding: 0.375rem 0.75rem;
+            border-radius: 0.5rem;
+            font-size: 0.875rem;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.375rem;
+        }
+        
+        .badge-unverified {
+            background: var(--warning-color);
+            color: white;
+            padding: 0.375rem 0.75rem;
+            border-radius: 0.5rem;
+            font-size: 0.875rem;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.375rem;
+        }
+        
+        .action-buttons {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+        
+        .btn-action {
+            flex: 1;
+            min-width: 200px;
+            padding: 1rem 1.5rem;
+            border-radius: 0.75rem;
+            font-weight: 600;
+            font-size: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            transition: all 0.3s ease;
+            border: none;
+        }
+        
+        .btn-primary-action {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        .btn-primary-action:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px -5px rgba(103, 126, 234, 0.5);
+        }
+        
+        .btn-secondary-action {
+            background: var(--light-bg);
+            color: var(--text-dark);
+        }
+        
+        .btn-secondary-action:hover {
+            background: var(--border-color);
+            transform: translateY(-2px);
+        }
+        
+        .loading-state {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 300px;
+        }
+        
+        .spinner-custom {
+            width: 60px;
+            height: 60px;
+            border: 5px solid var(--border-color);
+            border-top-color: var(--primary-color);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+    </style>
+{% endblock %}
+
+{% block body %}
+<div class="container profile-container">
+    <div id="loading-state" class="loading-state">
+        <div class="text-center">
+            <div class="spinner-custom mx-auto mb-3"></div>
+            <p class="text-white fs-5">Loading your profile...</p>
+        </div>
+    </div>
+    
+    <div id="profile-content" style="display: none;">
+        <div class="profile-header text-center">
+            <div class="profile-avatar">
+                <i class="bi bi-person-fill" style="color: var(--primary-color);"></i>
+            </div>
+            <h1 id="profile-username">...</h1>
+            <p id="profile-email">...</p>
+            
+            <div class="row stats-row g-3">
+                <div class="col-md-4">
+                    <div class="stat-card">
+                        <i class="bi bi-collection-fill"></i>
+                        <div class="stat-number" id="quiz-count">0</div>
+                        <div class="stat-label">Quizzes Created</div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="stat-card">
+                        <i class="bi bi-controller"></i>
+                        <div class="stat-number" id="games-hosted">0</div>
+                        <div class="stat-label">Games Hosted</div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="stat-card">
+                        <i class="bi bi-calendar-check-fill"></i>
+                        <div class="stat-number" id="member-since">...</div>
+                        <div class="stat-label">Member Since</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="row">
+            <div class="col-lg-8">
+                <div class="info-card">
+                    <h3>
+                        <i class="bi bi-person-badge-fill"></i>
+                        Account Information
+                    </h3>
+                    
+                    <div class="info-item">
+                        <div class="info-icon">
+                            <i class="bi bi-person-fill"></i>
+                        </div>
+                        <div class="info-content">
+                            <div class="info-label">Username</div>
+                            <div class="info-value" id="info-username">...</div>
+                        </div>
+                    </div>
+                    
+                    <div class="info-item">
+                        <div class="info-icon">
+                            <i class="bi bi-envelope-fill"></i>
+                        </div>
+                        <div class="info-content">
+                            <div class="info-label">Email Address</div>
+                            <div class="info-value" id="info-email">...</div>
+                        </div>
+                    </div>
+                    
+                    <div class="info-item">
+                        <div class="info-icon">
+                            <i class="bi bi-shield-check-fill"></i>
+                        </div>
+                        <div class="info-content">
+                            <div class="info-label">Email Verification Status</div>
+                            <div class="info-value">
+                                <span id="verification-badge">...</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="info-item">
+                        <div class="info-icon">
+                            <i class="bi bi-calendar3"></i>
+                        </div>
+                        <div class="info-content">
+                            <div class="info-label">Account Created</div>
+                            <div class="info-value" id="info-created">...</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-lg-4">
+                <div class="info-card">
+                    <h3>
+                        <i class="bi bi-gear-fill"></i>
+                        Quick Actions
+                    </h3>
+                    
+                    <div class="action-buttons flex-column">
+                        <a href="{{ path('user_edit') }}" class="btn btn-action btn-primary-action">
+                            <i class="bi bi-pencil-fill"></i>
+                            Edit Profile
+                        </a>
+                        
+                        <a href="{{ path('app_quiz_my_quizzes') }}" class="btn btn-action btn-secondary-action">
+                            <i class="bi bi-folder-fill"></i>
+                            My Quizzes
+                        </a>
+                        
+                        <a href="{{ path('app_quiz_new') }}" class="btn btn-action btn-secondary-action">
+                            <i class="bi bi-plus-circle-fill"></i>
+                            Create Quiz
+                        </a>
+                        
+                        <a href="{{ path('app_logout') }}" class="btn btn-action btn-secondary-action">
+                            <i class="bi bi-box-arrow-right"></i>
+                            Logout
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Fetch user information when page loads
+    document.addEventListener('DOMContentLoaded', function() {
+        fetch('/getuser', {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            credentials: 'same-origin'
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Not authenticated');
+            }
+            return response.json();
+        })
+        .then(data => {
+            // Hide loading, show content
+            document.getElementById('loading-state').style.display = 'none';
+            document.getElementById('profile-content').style.display = 'block';
+            
+            // Update header
+            document.getElementById('profile-username').textContent = data.username || 'User';
+            document.getElementById('profile-email').textContent = data.email || '';
+            
+            // Update info section
+            document.getElementById('info-username').textContent = data.username || 'N/A';
+            document.getElementById('info-email').textContent = data.email || 'N/A';
+            document.getElementById('info-created').textContent = data.createdAt || 'N/A';
+            
+            // Update verification badge
+            const verificationBadge = document.getElementById('verification-badge');
+            if (data.isVerified) {
+                verificationBadge.innerHTML = '<span class="badge-verified"><i class="bi bi-check-circle-fill"></i> Verified</span>';
+            } else {
+                verificationBadge.innerHTML = '<span class="badge-unverified"><i class="bi bi-exclamation-circle-fill"></i> Not Verified</span>';
+            }
+            
+            // Update stats
+            const createdDate = new Date(data.createdAt);
+            const memberSince = createdDate.getFullYear();
+            document.getElementById('member-since').textContent = memberSince;
+            
+            // Note: These would need to be fetched from the backend in a real application
+            document.getElementById('quiz-count').textContent = '0';
+            document.getElementById('games-hosted').textContent = '0';
+        })
+        .catch(error => {
+            document.getElementById('loading-state').innerHTML = `
+                <div class="alert alert-danger alert-custom mx-auto" style="max-width: 500px;">
+                    <i class="bi bi-exclamation-circle-fill fs-5"></i>
+                    <div>
+                        <strong>Error loading profile</strong><br>
+                        ${error.message}. Please <a href="{{ path('app_login') }}">login</a> again.
+                    </div>
+                </div>
+            `;
+        });
+    });
+</script>
+{% endblock %}
