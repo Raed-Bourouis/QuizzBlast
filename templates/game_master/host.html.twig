@@ -5,20 +5,53 @@
 {% block body %}
     <h1>Game Master</h1>
 
-    <p>Code de la partie : <strong>{{ session.code }}</strong></p>
+    <p>Code de la session : <strong>{{ session.code }}</strong></p>
+    <p>Status : <span id="status">{{ session.status }}</span></p>
 
-    <p>
-        Quiz :
-        {{ session.quiz.title ?? 'Quiz' }}
-    </p>
+    <button id="startGameBtn">Démarrer la partie</button>
+    <button id="nextQuestionBtn" disabled>Question suivante</button>
 
-    <p>Statut : {{ session.status }}</p>
+    <h2>Participants</h2>
+    <ul id="participants">
+        {% for participant in session.gameParticipants %}
+            <li>{{ participant.nickname }} - <span id="score-{{ participant.id }}">{{ participant.totalScore }}</span> points</li>
+        {% endfor %}
+    </ul>
 
-    <p>Partage ce code avec les joueurs pour qu'ils puissent rejoindre la partie.</p>
+    <script>
+        const code = "{{ session.code }}";
 
-    <p>
-        <a href="{{ path('game_leaderboard', { code: session.code }) }}">
-            Voir le classement (leaderboard)
-        </a>
-    </p>
+        const startBtn = document.getElementById('startGameBtn');
+        const nextBtn = document.getElementById('nextQuestionBtn');
+
+        startBtn.addEventListener('click', () => {
+            fetch(`/game/${code}/start-game`, { method: 'POST' })
+                .then(res => res.json())
+                .then(data => {
+                    if(data.success){
+                        document.getElementById('status').innerText = 'IN_PROGRESS';
+                        startBtn.disabled = true;
+                        nextBtn.disabled = false;
+                    }
+                });
+        });
+
+        nextBtn.addEventListener('click', () => {
+            fetch(`/game/${code}/next`, { method: 'POST' })
+                .then(res => res.json())
+                .then(data => {
+                    if(data.success){
+                        console.log('Question suivante envoyée');
+                    }
+                });
+        });
+
+        // Optionnel : WebSocket pour recevoir les updates
+        const ws = new WebSocket('ws://localhost:8080/game');
+
+        ws.onmessage = (event) => {
+            const msg = JSON.parse(event.data);
+            console.log('Message WebSocket reçu :', msg);
+        };
+    </script>
 {% endblock %}
