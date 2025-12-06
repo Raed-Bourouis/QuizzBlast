@@ -47,7 +47,6 @@ class UserController extends AbstractController
             'id' => $user->getId(),
             'email' => $user->getEmail(),
             'username' => $user->getUsername(),
-            'roles' => $user->getRoles(),
             'createdAt' => $user->getCreatedAt()?->format('Y-m-d H:i:s'),
             'isVerified' => $user->isVerified(),
         ]);

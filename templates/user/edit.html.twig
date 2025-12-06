@@ -1,57 +1,551 @@
-{% extends 'base.html.twig' %}
+{% extends 'base.html.twig' %}{% extends 'base.html.twig' %}
 
-{% block title %}Edit Profile{% endblock %}
+
+
+{% block title %}Edit Profile - QuizzBlast{% endblock %}{% block title %}Edit Profile{% endblock %}
+
+
+
+{% block stylesheets %}{% block body %}
+
+    {{ parent() }}<div class="container mt-5">
+
+    <style>    <div class="row justify-content-center">
+
+        .edit-container {        <div class="col-md-8">
+
+            padding: 3rem 0;            <div class="card">
+
+        }                <div class="card-header">
+
+                            <h3>Edit Profile</h3>
+
+        .edit-card {                </div>
+
+            background: white;                <div class="card-body">
+
+            border-radius: 1.5rem;                    <div id="message-container"></div>
+
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);                    
+
+            overflow: hidden;                    <form id="edit-profile-form">
+
+            animation: fadeInUp 0.6s ease-out;                        <div class="mb-3">
+
+        }                            <label for="username" class="form-label">Username</label>
+
+                                    <input type="text" class="form-control" id="username" name="username" required>
+
+        .edit-header {                        </div>
+
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+
+            color: white;                        <div class="mb-3">
+
+            padding: 2.5rem 2rem;                            <label for="email" class="form-label">Email</label>
+
+        }                            <input type="email" class="form-control" id="email" name="email" required>
+
+                                </div>
+
+        .edit-header h1 {
+
+            font-size: 2rem;                        <hr>
+
+            font-weight: 700;                        <h5>Change Password (Optional)</h5>
+
+            margin-bottom: 0.5rem;                        <p class="text-muted small">Leave blank if you don't want to change your password</p>
+
+            display: flex;
+
+            align-items: center;                        <div class="mb-3">
+
+            gap: 0.75rem;                            <label for="currentPassword" class="form-label">Current Password</label>
+
+        }                            <input type="password" class="form-control" id="currentPassword" name="currentPassword">
+
+                                    <small class="form-text text-muted">Required if changing password</small>
+
+        .edit-header p {                        </div>
+
+            opacity: 0.9;
+
+            margin-bottom: 0;                        <div class="mb-3">
+
+        }                            <label for="password" class="form-label">New Password</label>
+
+                                    <input type="password" class="form-control" id="password" name="password">
+
+        .edit-body {                        </div>
+
+            padding: 2.5rem;
+
+        }                        <div class="mb-3">
+
+                                    <label for="confirmPassword" class="form-label">Confirm New Password</label>
+
+        .form-section {                            <input type="password" class="form-control" id="confirmPassword" name="confirmPassword">
+
+            margin-bottom: 2.5rem;                        </div>
+
+            padding-bottom: 2.5rem;
+
+            border-bottom: 2px solid var(--border-color);                        <div class="d-grid gap-2">
+
+        }                            <button type="submit" class="btn btn-primary" id="submit-btn">
+
+                                        <span id="submit-text">Update Profile</span>
+
+        .form-section:last-of-type {                                <span id="submit-spinner" class="spinner-border spinner-border-sm d-none" role="status">
+
+            border-bottom: none;                                    <span class="visually-hidden">Loading...</span>
+
+            margin-bottom: 0;                                </span>
+
+        }                            </button>
+
+                                    <a href="{{ path('user_profile') }}" class="btn btn-secondary">Cancel</a>
+
+        .form-section h3 {                        </div>
+
+            font-size: 1.3rem;                    </form>
+
+            font-weight: 700;                </div>
+
+            margin-bottom: 1.5rem;            </div>
+
+            color: var(--primary-color);        </div>
+
+            display: flex;    </div>
+
+            align-items: center;</div>
+
+            gap: 0.5rem;
+
+        }<script>
+
+            // Load current user information
+
+        .form-label {    document.addEventListener('DOMContentLoaded', function() {
+
+            font-weight: 600;        fetch('/getuser', {
+
+            margin-bottom: 0.75rem;            method: 'GET',
+
+            color: var(--text-dark);            headers: {
+
+            display: flex;                'Content-Type': 'application/json',
+
+            align-items: center;            },
+
+            gap: 0.5rem;            credentials: 'same-origin'
+
+        }        })
+
+                .then(response => response.json())
+
+        .form-control {        .then(data => {
+
+            border: 2px solid var(--border-color);            document.getElementById('username').value = data.username || '';
+
+            border-radius: 0.75rem;            document.getElementById('email').value = data.email || '';
+
+            padding: 1rem;        })
+
+            font-size: 1rem;        .catch(error => {
+
+            transition: all 0.3s ease;            showMessage('Error loading user data: ' + error.message, 'danger');
+
+        }        });
+
+            });
+
+        .form-control:focus {
+
+            border-color: var(--primary-color);    // Handle form submission
+
+            box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1);    document.getElementById('edit-profile-form').addEventListener('submit', function(e) {
+
+        }        e.preventDefault();
+
+        
+
+        .form-text {        // Get form values
+
+            color: var(--text-muted);        const username = document.getElementById('username').value;
+
+            font-size: 0.875rem;        const email = document.getElementById('email').value;
+
+            margin-top: 0.5rem;        const currentPassword = document.getElementById('currentPassword').value;
+
+            display: flex;        const password = document.getElementById('password').value;
+
+            align-items: center;        const confirmPassword = document.getElementById('confirmPassword').value;
+
+            gap: 0.5rem;
+
+        }        // Validate password confirmation
+
+                if (password && password !== confirmPassword) {
+
+        .btn-save {            showMessage('New passwords do not match', 'danger');
+
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);            return;
+
+            color: white;        }
+
+            padding: 1rem 2.5rem;
+
+            border-radius: 0.75rem;        // Validate that current password is provided if new password is set
+
+            font-weight: 600;        if (password && !currentPassword) {
+
+            font-size: 1.1rem;            showMessage('Please enter your current password to change it', 'danger');
+
+            border: none;            return;
+
+            transition: all 0.3s ease;        }
+
+            display: inline-flex;
+
+            align-items: center;        // Build request data
+
+            gap: 0.75rem;        const data = {
+
+        }            username: username,
+
+                    email: email
+
+        .btn-save:hover {        };
+
+            transform: translateY(-2px);
+
+            box-shadow: 0 10px 20px -5px rgba(103, 126, 234, 0.5);        if (password) {
+
+        }            data.currentPassword = currentPassword;
+
+                    data.password = password;
+
+        .btn-save:disabled {        }
+
+            opacity: 0.7;
+
+            cursor: not-allowed;        // Show loading state
+
+            transform: none;        const submitBtn = document.getElementById('submit-btn');
+
+        }        const submitText = document.getElementById('submit-text');
+
+                const submitSpinner = document.getElementById('submit-spinner');
+
+        .btn-cancel {        submitBtn.disabled = true;
+
+            background: var(--light-bg);        submitText.classList.add('d-none');
+
+            color: var(--text-dark);        submitSpinner.classList.remove('d-none');
+
+            padding: 1rem 2.5rem;
+
+            border-radius: 0.75rem;        // Send update request
+
+            font-weight: 600;        fetch('/user/update', {
+
+            font-size: 1.1rem;            method: 'POST',
+
+            border: none;            headers: {
+
+            transition: all 0.3s ease;                'Content-Type': 'application/json',
+
+            display: inline-flex;            },
+
+            align-items: center;            credentials: 'same-origin',
+
+            gap: 0.75rem;            body: JSON.stringify(data)
+
+            text-decoration: none;        })
+
+        }        .then(response => {
+
+                    if (!response.ok) {
+
+        .btn-cancel:hover {                return response.json().then(err => Promise.reject(err));
+
+            background: var(--border-color);            }
+
+            transform: translateY(-2px);            return response.json();
+
+            color: var(--text-dark);        })
+
+        }        .then(data => {
+
+                    showMessage(data.message || 'Profile updated successfully!', 'success');
+
+        .button-group {            // Clear password fields
+
+            display: flex;            document.getElementById('currentPassword').value = '';
+
+            gap: 1rem;            document.getElementById('password').value = '';
+
+            margin-top: 2rem;            document.getElementById('confirmPassword').value = '';
+
+            flex-wrap: wrap;            
+
+        }            // Redirect to profile page after 2 seconds
+
+                    setTimeout(() => {
+
+        .alert-custom {                window.location.href = '{{ path('user_profile') }}';
+
+            border-radius: 0.75rem;            }, 2000);
+
+            border: none;        })
+
+            padding: 1rem 1.25rem;        .catch(error => {
+
+            margin-bottom: 1.5rem;            showMessage(error.error || 'Error updating profile', 'danger');
+
+            display: flex;        })
+
+            align-items: flex-start;        .finally(() => {
+
+            gap: 0.75rem;            // Reset button state
+
+            animation: slideInDown 0.4s ease-out;            submitBtn.disabled = false;
+
+        }            submitText.classList.remove('d-none');
+
+                    submitSpinner.classList.add('d-none');
+
+        .alert-success {        });
+
+            background: #d1fae5;    });
+
+            color: #065f46;
+
+        }    function showMessage(message, type) {
+
+                const messageContainer = document.getElementById('message-container');
+
+        .alert-danger {        messageContainer.innerHTML = `
+
+            background: #fee2e2;            <div class="alert alert-${type} alert-dismissible fade show" role="alert">
+
+            color: #991b1b;                ${message}
+
+        }                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+
+                    </div>
+
+        .password-strength {        `;
+
+            margin-top: 0.75rem;        // Auto-dismiss after 5 seconds
+
+        }        setTimeout(() => {
+
+                    const alert = messageContainer.querySelector('.alert');
+
+        .strength-bar {            if (alert) {
+
+            height: 6px;                alert.remove();
+
+            background: var(--border-color);            }
+
+            border-radius: 3px;        }, 5000);
+
+            overflow: hidden;    }
+
+            margin-bottom: 0.5rem;</script>
+
+        }{% endblock %}
+
+        
+        .strength-fill {
+            height: 100%;
+            width: 0;
+            transition: all 0.3s ease;
+            border-radius: 3px;
+        }
+        
+        .strength-weak { 
+            width: 33%; 
+            background: var(--danger-color); 
+        }
+        
+        .strength-medium { 
+            width: 66%; 
+            background: var(--warning-color); 
+        }
+        
+        .strength-strong { 
+            width: 100%; 
+            background: var(--success-color); 
+        }
+        
+        .strength-text {
+            font-size: 0.875rem;
+            font-weight: 600;
+        }
+        
+        @keyframes slideInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
+{% endblock %}
 
 {% block body %}
-<div class="container mt-5">
+<div class="container edit-container">
     <div class="row justify-content-center">
-        <div class="col-md-8">
-            <div class="card">
-                <div class="card-header">
-                    <h3>Edit Profile</h3>
+        <div class="col-lg-8">
+            <div class="edit-card">
+                <div class="edit-header">
+                    <h1>
+                        <i class="bi bi-pencil-square"></i>
+                        Edit Profile
+                    </h1>
+                    <p>Update your account information and password</p>
                 </div>
-                <div class="card-body">
+                
+                <div class="edit-body">
                     <div id="message-container"></div>
                     
                     <form id="edit-profile-form">
-                        <div class="mb-3">
-                            <label for="username" class="form-label">Username</label>
-                            <input type="text" class="form-control" id="username" name="username" required>
+                        <!-- Account Information Section -->
+                        <div class="form-section">
+                            <h3>
+                                <i class="bi bi-person-badge"></i>
+                                Account Information
+                            </h3>
+                            
+                            <div class="mb-4">
+                                <label for="username" class="form-label">
+                                    <i class="bi bi-person-fill"></i>
+                                    Username
+                                </label>
+                                <input 
+                                    type="text" 
+                                    class="form-control" 
+                                    id="username" 
+                                    name="username" 
+                                    placeholder="Enter your username"
+                                    required
+                                >
+                                <div class="form-text">
+                                    <i class="bi bi-info-circle"></i>
+                                    This is how others will see you on QuizzBlast
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="email" class="form-label">
+                                    <i class="bi bi-envelope-fill"></i>
+                                    Email Address
+                                </label>
+                                <input 
+                                    type="email" 
+                                    class="form-control" 
+                                    id="email" 
+                                    name="email" 
+                                    placeholder="your.email@example.com"
+                                    required
+                                >
+                                <div class="form-text">
+                                    <i class="bi bi-info-circle"></i>
+                                    We'll send important notifications to this email
+                                </div>
+                            </div>
                         </div>
 
-                        <div class="mb-3">
-                            <label for="email" class="form-label">Email</label>
-                            <input type="email" class="form-control" id="email" name="email" required>
+                        <!-- Change Password Section -->
+                        <div class="form-section">
+                            <h3>
+                                <i class="bi bi-shield-lock"></i>
+                                Change Password
+                            </h3>
+                            
+                            <p class="text-muted mb-4">
+                                <i class="bi bi-exclamation-circle"></i>
+                                Leave these fields blank if you don't want to change your password
+                            </p>
+
+                            <div class="mb-4">
+                                <label for="currentPassword" class="form-label">
+                                    <i class="bi bi-key-fill"></i>
+                                    Current Password
+                                </label>
+                                <input 
+                                    type="password" 
+                                    class="form-control" 
+                                    id="currentPassword" 
+                                    name="currentPassword"
+                                    placeholder="Enter your current password"
+                                >
+                                <div class="form-text">
+                                    <i class="bi bi-shield-check"></i>
+                                    Required to change your password
+                                </div>
+                            </div>
+
+                            <div class="mb-4">
+                                <label for="password" class="form-label">
+                                    <i class="bi bi-lock-fill"></i>
+                                    New Password
+                                </label>
+                                <input 
+                                    type="password" 
+                                    class="form-control" 
+                                    id="password" 
+                                    name="password"
+                                    placeholder="Enter your new password"
+                                >
+                                <div id="password-strength" class="password-strength" style="display: none;">
+                                    <div class="strength-bar">
+                                        <div id="strength-fill" class="strength-fill"></div>
+                                    </div>
+                                    <div id="strength-text" class="strength-text"></div>
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="confirmPassword" class="form-label">
+                                    <i class="bi bi-lock-fill"></i>
+                                    Confirm New Password
+                                </label>
+                                <input 
+                                    type="password" 
+                                    class="form-control" 
+                                    id="confirmPassword" 
+                                    name="confirmPassword"
+                                    placeholder="Confirm your new password"
+                                >
+                                <div class="form-text">
+                                    <i class="bi bi-check-circle"></i>
+                                    Re-enter your new password to confirm
+                                </div>
+                            </div>
                         </div>
 
-                        <hr>
-                        <h5>Change Password (Optional)</h5>
-                        <p class="text-muted small">Leave blank if you don't want to change your password</p>
-
-                        <div class="mb-3">
-                            <label for="currentPassword" class="form-label">Current Password</label>
-                            <input type="password" class="form-control" id="currentPassword" name="currentPassword">
-                            <small class="form-text text-muted">Required if changing password</small>
-                        </div>
-
-                        <div class="mb-3">
-                            <label for="password" class="form-label">New Password</label>
-                            <input type="password" class="form-control" id="password" name="password">
-                        </div>
-
-                        <div class="mb-3">
-                            <label for="confirmPassword" class="form-label">Confirm New Password</label>
-                            <input type="password" class="form-control" id="confirmPassword" name="confirmPassword">
-                        </div>
-
-                        <div class="d-grid gap-2">
-                            <button type="submit" class="btn btn-primary" id="submit-btn">
-                                <span id="submit-text">Update Profile</span>
+                        <!-- Action Buttons -->
+                        <div class="button-group">
+                            <button type="submit" class="btn btn-save" id="submit-btn">
+                                <span id="submit-text">
+                                    <i class="bi bi-check-circle-fill"></i>
+                                    Save Changes
+                                </span>
                                 <span id="submit-spinner" class="spinner-border spinner-border-sm d-none" role="status">
                                     <span class="visually-hidden">Loading...</span>
                                 </span>
                             </button>
-                            <a href="{{ path('user_profile') }}" class="btn btn-secondary">Cancel</a>
+                            <a href="{{ path('user_profile') }}" class="btn btn-cancel">
+                                <i class="bi bi-x-circle-fill"></i>
+                                Cancel
+                            </a>
                         </div>
                     </form>
                 </div>
@@ -80,6 +574,43 @@
         });
     });
 
+    // Password strength checker
+    document.getElementById('password').addEventListener('input', function(e) {
+        const password = e.target.value;
+        const strengthDiv = document.getElementById('password-strength');
+        const strengthFill = document.getElementById('strength-fill');
+        const strengthText = document.getElementById('strength-text');
+        
+        if (password.length === 0) {
+            strengthDiv.style.display = 'none';
+            return;
+        }
+        
+        strengthDiv.style.display = 'block';
+        
+        let strength = 0;
+        if (password.length >= 8) strength++;
+        if (/[a-z]/.test(password) && /[A-Z]/.test(password)) strength++;
+        if (/\d/.test(password)) strength++;
+        if (/[^a-zA-Z0-9]/.test(password)) strength++;
+        
+        strengthFill.className = 'strength-fill';
+        
+        if (strength <= 1) {
+            strengthFill.classList.add('strength-weak');
+            strengthText.textContent = '⚠️ Weak password';
+            strengthText.style.color = 'var(--danger-color)';
+        } else if (strength === 2 || strength === 3) {
+            strengthFill.classList.add('strength-medium');
+            strengthText.textContent = '⚡ Medium strength';
+            strengthText.style.color = 'var(--warning-color)';
+        } else {
+            strengthFill.classList.add('strength-strong');
+            strengthText.textContent = '✅ Strong password';
+            strengthText.style.color = 'var(--success-color)';
+        }
+    });
+
     // Handle form submission
     document.getElementById('edit-profile-form').addEventListener('submit', function(e) {
         e.preventDefault();
@@ -93,13 +624,13 @@
 
         // Validate password confirmation
         if (password && password !== confirmPassword) {
-            showMessage('New passwords do not match', 'danger');
+            showMessage('❌ New passwords do not match', 'danger');
             return;
         }
 
         // Validate that current password is provided if new password is set
         if (password && !currentPassword) {
-            showMessage('Please enter your current password to change it', 'danger');
+            showMessage('❌ Please enter your current password to change it', 'danger');
             return;
         }
 
@@ -118,6 +649,7 @@
         const submitBtn = document.getElementById('submit-btn');
         const submitText = document.getElementById('submit-text');
         const submitSpinner = document.getElementById('submit-spinner');
+        
         submitBtn.disabled = true;
         submitText.classList.add('d-none');
         submitSpinner.classList.remove('d-none');
@@ -138,11 +670,12 @@
             return response.json();
         })
         .then(data => {
-            showMessage(data.message || 'Profile updated successfully!', 'success');
+            showMessage('✅ ' + (data.message || 'Profile updated successfully!'), 'success');
             // Clear password fields
             document.getElementById('currentPassword').value = '';
             document.getElementById('password').value = '';
             document.getElementById('confirmPassword').value = '';
+            document.getElementById('password-strength').style.display = 'none';
             
             // Redirect to profile page after 2 seconds
             setTimeout(() => {
@@ -150,7 +683,7 @@
             }, 2000);
         })
         .catch(error => {
-            showMessage(error.error || 'Error updating profile', 'danger');
+            showMessage('❌ ' + (error.error || 'Error updating profile'), 'danger');
         })
         .finally(() => {
             // Reset button state
@@ -163,11 +696,16 @@
     function showMessage(message, type) {
         const messageContainer = document.getElementById('message-container');
         messageContainer.innerHTML = `
-            <div class="alert alert-${type} alert-dismissible fade show" role="alert">
-                ${message}
+            <div class="alert alert-${type} alert-custom alert-dismissible fade show" role="alert">
+                <i class="bi bi-${type === 'success' ? 'check-circle-fill' : 'exclamation-circle-fill'} fs-5"></i>
+                <div>${message}</div>
                 <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
             </div>
         `;
+        
+        // Scroll to top
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        
         // Auto-dismiss after 5 seconds
         setTimeout(() => {
             const alert = messageContainer.querySelector('.alert');
