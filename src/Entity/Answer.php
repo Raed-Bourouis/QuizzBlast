@@ -4,6 +4,7 @@ namespace App\Entity;
 
 use App\Repository\AnswerRepository;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: AnswerRepository::class)]
 class Answer
@@ -14,12 +15,17 @@ class Answer
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
+    #[Assert\NotBlank(message: 'Answer text is required')]
+    #[Assert\Length(min: 1, max: 255, minMessage: 'Answer text must be at least {{ limit }} character', maxMessage: 'Answer text cannot be longer than {{ limit }} characters')]
     private ?string $text = null;
 
     #[ORM\Column]
+    #[Assert\NotNull(message: 'Please specify if this answer is correct')]
     private ?bool $isCorrect = null;
 
     #[ORM\Column]
+    #[Assert\NotBlank(message: 'Order index is required')]
+    #[Assert\PositiveOrZero(message: 'Order index must be zero or positive')]
     private ?int $orderIndex = null;
 
     #[ORM\ManyToOne(inversedBy: 'answers')]
