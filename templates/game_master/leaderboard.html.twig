@@ -1,38 +1,70 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Leaderboard{% endblock %}
+{% block title %}Leaderboard - QuizzBlast{% endblock %}
 
 {% block body %}
-    <h1>Leaderboard – Code {{ session.code }}</h1>
+<div class="container my-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card shadow">
+                <div class="card-body p-4">
+                    <div class="text-center mb-4">
+                        <h1 class="display-5 fw-bold mb-3">🏆 Leaderboard</h1>
+                        <p class="text-muted">Game Code: <span class="badge bg-primary">{{ session.code }}</span></p>
+                    </div>
 
-    <table border="1" cellpadding="6">
-        <thead>
-        <tr>
-            <th>#</th>
-            <th>Joueur</th>
-            <th>Score total</th>
-        </tr>
-        </thead>
-        <tbody>
-        {% for participant in participants %}
-            <tr>
-                <td>{{ loop.index }}</td>
-                <td>
-                    {% if participant.nickname %}
-                        {{ participant.nickname }}
-                    {% elseif participant.user and participant.user.username is defined %}
-                        {{ participant.user.username }}
-                    {% else %}
-                        Joueur {{ loop.index }}
-                    {% endif %}
-                </td>
-                <td>{{ participant.totalScore }}</td>
-            </tr>
-        {% else %}
-            <tr>
-                <td colspan="3">Aucun participant pour cette session.</td>
-            </tr>
-        {% endfor %}
-        </tbody>
-    </table>
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead class="table-light">
+                                <tr>
+                                    <th class="text-center" style="width: 80px;">Rank</th>
+                                    <th>Player</th>
+                                    <th class="text-end" style="width: 150px;">Total Score</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for participant in participants %}
+                                    <tr>
+                                        <td class="text-center fw-bold">
+                                            {% if loop.index == 1 %}
+                                                <span class="badge bg-warning text-dark">🥇 {{ loop.index }}</span>
+                                            {% elseif loop.index == 2 %}
+                                                <span class="badge bg-secondary">🥈 {{ loop.index }}</span>
+                                            {% elseif loop.index == 3 %}
+                                                <span class="badge bg-danger">🥉 {{ loop.index }}</span>
+                                            {% else %}
+                                                {{ loop.index }}
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            {% if participant.nickname %}
+                                                {{ participant.nickname }}
+                                            {% elseif participant.user and participant.user.username is defined %}
+                                                {{ participant.user.username }}
+                                            {% else %}
+                                                Player {{ loop.index }}
+                                            {% endif %}
+                                        </td>
+                                        <td class="text-end fw-bold text-primary">
+                                            {{ participant.totalScore }} pts
+                                        </td>
+                                    </tr>
+                                {% else %}
+                                    <tr>
+                                        <td colspan="3" class="text-center text-muted py-5">
+                                            <div class="mb-3">
+                                                <span class="display-4">👥</span>
+                                            </div>
+                                            No participants in this session yet
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 {% endblock %}
