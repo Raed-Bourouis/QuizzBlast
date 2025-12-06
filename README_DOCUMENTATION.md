@@ -5,13 +5,14 @@
 ### 🎯 For Development Team
 
 1. **[TEAM_SETUP_GUIDE.md](TEAM_SETUP_GUIDE.md)** ⭐ **START HERE**
+
    - 3-step quick setup
    - All required commands
    - Database migrations guide
    - Configuration instructions
    - Common issues & solutions
 
-2. **[ROUTES_AND_FEATURES.md](ROUTES_AND_FEATURES.md)** 
+2. **[ROUTES_AND_FEATURES.md](ROUTES_AND_FEATURES.md)**
    - Complete list of all routes
    - Feature descriptions
    - Database entities overview
@@ -21,12 +22,14 @@
 ### 📧 Email System Documentation
 
 3. **[EMAIL_ASYNC_SOLUTION.md](EMAIL_ASYNC_SOLUTION.md)**
+
    - Async vs Sync email delivery
    - Messenger configuration
    - How to process email queue
    - Production setup
 
 4. **[EMAIL_TROUBLESHOOTING_SOLVED.md](EMAIL_TROUBLESHOOTING_SOLVED.md)**
+
    - Gmail SMTP setup
    - Common email issues
    - Testing email delivery
@@ -56,24 +59,29 @@
 ## 🚀 Getting Started (3 Steps)
 
 ### Step 1: Install Dependencies
+
 ```bash
 composer install
 ```
 
 ### Step 2: Configure Environment
+
 Create `.env.local`:
+
 ```env
 DATABASE_URL="mysql://root:@127.0.0.1:3306/quizz_blast?serverVersion=8.0"
 MAILER_DSN=gmail+smtp://your-email@gmail.com:your-app-password@default
 ```
 
 ### Step 3: Setup Database
+
 ```bash
 php bin/console doctrine:database:create
 php bin/console doctrine:migrations:migrate
 ```
 
 **🎉 Done! Start the server:**
+
 ```bash
 symfony server:start
 ```
@@ -137,30 +145,35 @@ QuizzBlast/
 ## 🎯 Key Features
 
 ### ✅ User Management
+
 - Registration with email verification
 - Login with username OR email
 - Profile management
 - Password change with strength indicator
 
 ### ✅ Quiz System
+
 - Create, edit, delete quizzes
 - Multiple questions with answers
 - Difficulty levels
 - Public/Private visibility
 
 ### ✅ Game Hosting
+
 - Live game sessions
 - Unique game codes
 - Real-time leaderboards
 - Multiplayer support
 
 ### ✅ Email System
+
 - Welcome emails
 - Email verification
 - Login notifications
 - Async/Sync delivery
 
 ### ✅ Modern UI
+
 - Professional gradient design
 - Fully responsive
 - Bootstrap 5
@@ -192,37 +205,41 @@ QuizzBlast/
 
 ## 🌐 Main Routes
 
-| Route | URL | Description |
-|-------|-----|-------------|
-| Homepage | `/app_home` | Landing page |
-| Login | `/login` | User login |
-| Register | `/register` | User registration |
-| Profile | `/profile` | User profile |
-| Quizzes | `/quiz/` | Browse quizzes |
-| My Quizzes | `/quiz/my-quizzes` | User's quizzes |
-| Create Quiz | `/quiz/new` | Create new quiz |
-| Start Game | `/game/start/{id}` | Host game session |
+| Route       | URL                | Description       |
+| ----------- | ------------------ | ----------------- |
+| Homepage    | `/app_home`        | Landing page      |
+| Login       | `/login`           | User login        |
+| Register    | `/register`        | User registration |
+| Profile     | `/profile`         | User profile      |
+| Quizzes     | `/quiz/`           | Browse quizzes    |
+| My Quizzes  | `/quiz/my-quizzes` | User's quizzes    |
+| Create Quiz | `/quiz/new`        | Create new quiz   |
+| Start Game  | `/game/start/{id}` | Host game session |
 
 ---
 
 ## 🐛 Troubleshooting
 
 ### Tables Don't Exist
+
 ```bash
 php bin/console doctrine:migrations:migrate
 ```
 
 ### Emails Not Sending
+
 ```bash
 php bin/console messenger:consume async --limit=10
 ```
 
 ### Route Not Found
+
 ```bash
 php bin/console cache:clear
 ```
 
 ### Check Configuration
+
 ```bash
 php bin/console debug:container --env-vars
 ```
@@ -232,11 +249,13 @@ php bin/console debug:container --env-vars
 ## 📞 Support
 
 ### Documentation:
+
 - [Symfony Docs](https://symfony.com/doc/current/index.html)
 - [Doctrine Docs](https://www.doctrine-project.org/projects/doctrine-orm/en/latest/)
 - [Twig Docs](https://twig.symfony.com/doc/)
 
 ### Debug Commands:
+
 ```bash
 php bin/console debug:router              # View routes
 php bin/console debug:container           # View services
@@ -248,6 +267,7 @@ php bin/console doctrine:schema:validate  # Check database
 ## 🎓 Learning Resources
 
 ### For New Team Members:
+
 1. Read `TEAM_SETUP_GUIDE.md` - Setup instructions
 2. Read `ROUTES_AND_FEATURES.md` - Understand features
 3. Review `UI_REDESIGN_COMPLETE.md` - Learn design system
@@ -259,21 +279,25 @@ php bin/console doctrine:schema:validate  # Check database
 ## 📝 Development Workflow
 
 1. **Pull latest code**
+
    ```bash
    git pull origin bechir
    ```
 
 2. **Install dependencies**
+
    ```bash
    composer install
    ```
 
 3. **Update database**
+
    ```bash
    php bin/console doctrine:migrations:migrate
    ```
 
 4. **Clear cache**
+
    ```bash
    php bin/console cache:clear
    ```
@@ -288,6 +312,7 @@ php bin/console doctrine:schema:validate  # Check database
 ## 🚀 Recent Updates
 
 ### ✅ December 6, 2025
+
 - ✅ Removed roles system (simplified to ROLE_USER only)
 - ✅ Complete UI redesign with modern gradient theme
 - ✅ Fixed route names across all templates
@@ -341,4 +366,4 @@ Get-Content var/log/dev.log -Tail 50
 
 All documentation is up-to-date and the application is fully configured.
 
-*Last Updated: December 6, 2025*
+_Last Updated: December 6, 2025_
