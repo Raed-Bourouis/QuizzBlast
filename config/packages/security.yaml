@@ -9,17 +9,17 @@ security:
           class: App\Entity\User
           property: email # Or the identifier field you use, like `username`
     firewalls:
-      dev:
-        pattern: ^/(_(profiler|wdt)|css|images|js)/
-        security: false
-      main:
-        lazy: true
-        provider: app_user_provider
-        custom_authenticator: App\Security\AppCustomAuthenticator
-        logout:
-          path: app_logout
-          # where to redirect after logout
-          # target: app_any_route
+        dev:
+            pattern: ^/(_(profiler|wdt)|css|images|js)/
+            security: false
+        main:
+            lazy: true
+            provider: app_user_provider
+            custom_authenticator: App\Security\AppCustomAuthenticator
+            logout:
+                path: app_logout
+                # where to redirect after logout
+                # target: app_any_route
 
         remember_me:
           secret: '%kernel.secret%'
