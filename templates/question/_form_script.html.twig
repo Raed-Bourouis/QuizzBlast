@@ -1,0 +1,208 @@
+{# Reusable JavaScript for dynamic question and answer forms #}
+<script>
+// Constants for validation
+const MINIMUM_ANSWER_COUNT = 2;
+
+document.addEventListener('DOMContentLoaded', function() {
+    initializeDynamicForms();
+});
+
+function initializeDynamicForms() {
+    const questionsCollection = document.querySelector('.questions-collection');
+    const addQuestionButton = document.querySelector('.add-question');
+    
+    if (addQuestionButton && questionsCollection) {
+        addQuestionButton.addEventListener('click', function() {
+            addQuestion(questionsCollection);
+        });
+    }
+    
+    // Initialize existing questions
+    initializeExistingQuestions();
+}
+
+function initializeExistingQuestions() {
+    // Add event listeners to existing remove question buttons
+    document.querySelectorAll('.remove-question').forEach(function(button) {
+        button.addEventListener('click', function() {
+            removeQuestion(button);
+        });
+    });
+    
+    // Add event listeners to existing add answer buttons
+    document.querySelectorAll('.add-answer').forEach(function(button) {
+        button.addEventListener('click', function() {
+            const questionItem = button.closest('.question-item');
+            if (questionItem) {
+                const answersCollection = questionItem.querySelector('.answers-collection');
+                if (answersCollection) {
+                    addAnswer(answersCollection);
+                }
+            }
+        });
+    });
+    
+    // Add event listeners to existing remove answer buttons
+    document.querySelectorAll('.remove-answer').forEach(function(button) {
+        button.addEventListener('click', function() {
+            removeAnswer(button);
+        });
+    });
+}
+
+function addQuestion(collection) {
+    const prototype = collection.getAttribute('data-prototype');
+    if (!prototype) {
+        console.error('No prototype found for questions collection');
+        return;
+    }
+    
+    let index = parseInt(collection.getAttribute('data-index'));
+    if (isNaN(index)) {
+        index = 0;
+    }
+    
+    let newForm = prototype.replace(/__name__/g, index);
+    
+    const wrapper = document.createElement('div');
+    wrapper.classList.add('collection-item', 'question-item');
+    wrapper.setAttribute('data-question-index', index + 1);
+    wrapper.innerHTML = newForm;
+    
+    // Add question number badge for styled version
+    const existingBadge = wrapper.querySelector('.question-number-badge');
+    if (!existingBadge) {
+        const badge = document.createElement('div');
+        badge.className = 'question-number-badge';
+        badge.innerHTML = `<i class="bi bi-question-circle-fill"></i> Question #${index + 1}`;
+        wrapper.insertBefore(badge, wrapper.firstChild);
+    }
+    
+    // Initialize the answers collection in the new question
+    const answersCollection = wrapper.querySelector('.answers-collection');
+    if (answersCollection) {
+        const currentAnswerIndex = answersCollection.getAttribute('data-index');
+        if (!currentAnswerIndex) {
+            answersCollection.setAttribute('data-index', '0');
+        }
+        
+        // Add "Add Answer" button
+        const addAnswerBtn = document.createElement('button');
+        addAnswerBtn.type = 'button';
+        addAnswerBtn.className = 'btn btn-sm btn-outline-primary add-answer mt-2';
+        addAnswerBtn.innerHTML = '<i class="bi bi-plus-circle"></i> Add Answer';
+        addAnswerBtn.addEventListener('click', function() {
+            addAnswer(answersCollection);
+        });
+        
+        // Insert add answer button after answers collection
+        if (answersCollection.parentNode) {
+            answersCollection.parentNode.insertBefore(addAnswerBtn, answersCollection.nextSibling);
+        }
+    }
+    
+    // Add "Remove Question" button
+    const removeBtn = document.createElement('button');
+    removeBtn.type = 'button';
+    removeBtn.className = 'btn btn-remove-item remove-question mt-2 float-end';
+    removeBtn.innerHTML = '<i class="bi bi-trash-fill"></i> Remove Question';
+    removeBtn.addEventListener('click', function() {
+        removeQuestion(removeBtn);
+    });
+    wrapper.appendChild(removeBtn);
+    
+    collection.appendChild(wrapper);
+    collection.setAttribute('data-index', index + 1);
+    
+    updateQuestionNumbers();
+}
+
+function removeQuestion(button) {
+    const questionItem = button.closest('.question-item');
+    if (questionItem) {
+        if (confirm('Are you sure you want to remove this question?')) {
+            questionItem.remove();
+            updateQuestionNumbers();
+        }
+    }
+}
+
+function addAnswer(collection) {
+    const prototype = collection.getAttribute('data-prototype');
+    if (!prototype) {
+        console.error('No prototype found for answers collection');
+        return;
+    }
+    
+    let index = parseInt(collection.getAttribute('data-index'));
+    if (isNaN(index)) {
+        index = 0;
+    }
+    
+    let newForm = prototype.replace(/__name__/g, index);
+    
+    const wrapper = document.createElement('div');
+    wrapper.classList.add('nested-collection', 'answer-item');
+    wrapper.innerHTML = newForm;
+    
+    // Find or create the row structure for the answer
+    let row = wrapper.querySelector('.row');
+    if (!row) {
+        row = document.createElement('div');
+        row.className = 'row align-items-end';
+        // Move all children to the row
+        while (wrapper.firstChild) {
+            row.appendChild(wrapper.firstChild);
+        }
+        wrapper.appendChild(row);
+    }
+    
+    // Add "Remove Answer" button
+    const removeBtn = document.createElement('button');
+    removeBtn.type = 'button';
+    removeBtn.className = 'btn btn-remove-item remove-answer w-100';
+    removeBtn.innerHTML = '<i class="bi bi-x-lg"></i>';
+    removeBtn.addEventListener('click', function() {
+        removeAnswer(removeBtn);
+    });
+    
+    // Create a column for the remove button
+    const removeCol = document.createElement('div');
+    removeCol.className = 'col-md-1';
+    removeCol.appendChild(removeBtn);
+    row.appendChild(removeCol);
+    
+    collection.appendChild(wrapper);
+    collection.setAttribute('data-index', index + 1);
+}
+
+function removeAnswer(button) {
+    const answerItem = button.closest('.answer-item');
+    if (answerItem) {
+        const answersCollection = answerItem.closest('.answers-collection');
+        const answerCount = answersCollection ? answersCollection.querySelectorAll('.answer-item').length : 0;
+        
+        if (answerCount <= MINIMUM_ANSWER_COUNT) {
+            alert(`A question must have at least ${MINIMUM_ANSWER_COUNT} answers.`);
+            return;
+        }
+        
+        answerItem.remove();
+    }
+}
+
+function updateQuestionNumbers() {
+    const questionItems = document.querySelectorAll('.question-item');
+    questionItems.forEach((item, index) => {
+        const badge = item.querySelector('.question-number-badge');
+        if (badge) {
+            badge.innerHTML = `<i class="bi bi-question-circle-fill"></i> Question #${index + 1}`;
+        }
+        // Also update h5 headers for simpler styled versions
+        const header = item.querySelector('h5');
+        if (header && header.textContent.includes('Question #')) {
+            header.textContent = `Question #${index + 1}`;
+        }
+    });
+}
+</script>
