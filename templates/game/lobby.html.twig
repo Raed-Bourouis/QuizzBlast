@@ -1,0 +1,127 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Game Lobby - QuizzBlast{% endblock %}
+
+{% block body %}
+<div class="container my-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card card-custom fade-in-up">
+                <div class="card-body p-5">
+                    <div class="text-center mb-4">
+                        <h1 class="display-5 fw-bold mb-3">
+                            <i class="bi bi-hourglass-split text-primary"></i>
+                            Game Lobby
+                        </h1>
+                        
+                        <div class="alert alert-primary mb-4" role="alert">
+                            <h3 class="h4 mb-3">Game Code</h3>
+                            <div class="display-3 fw-bold text-primary mb-2">{{ session.code }}</div>
+                            <p class="mb-0">Share this code with other players</p>
+                        </div>
+
+                        <div id="statusMessage" class="alert alert-info" role="alert">
+                            <i class="bi bi-clock-history"></i>
+                            <span id="statusText">Waiting for host to start the game...</span>
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <h4 class="fw-bold mb-3">
+                            <i class="bi bi-people-fill"></i>
+                            Players (<span id="playerCount">{{ session.participants|length }}</span>)
+                        </h4>
+                        <div class="list-group" id="participantsList">
+                            {% for participant in session.participants %}
+                                <div class="list-group-item d-flex justify-content-between align-items-center" id="participant-{{ participant.id }}">
+                                    <div>
+                                        <i class="bi bi-person-circle text-primary me-2"></i>
+                                        <strong>{{ participant.nickname }}</strong>
+                                        {% if participant.isHost %}
+                                            <span class="badge bg-warning text-dark ms-2">
+                                                <i class="bi bi-star-fill"></i> Host
+                                            </span>
+                                        {% endif %}
+                                    </div>
+                                    <small class="text-muted">
+                                        <i class="bi bi-clock"></i> Joined {{ participant.joinedAt|date('H:i') }}
+                                    </small>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <div class="d-grid gap-2">
+                        <button class="btn btn-outline-danger" onclick="leaveGame()">
+                            <i class="bi bi-box-arrow-left"></i> Leave Game
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const sessionId = {{ session.id }};
+    const sessionCode = '{{ session.code }}';
+    let pollInterval;
+
+    // Start polling for updates
+    pollInterval = setInterval(pollForUpdates, 1000);
+
+    async function pollForUpdates() {
+        try {
+            const response = await fetch(`/api/game/session/${sessionId}/state`);
+            const data = await response.json();
+
+            if (response.ok) {
+                // Update player count
+                document.getElementById('playerCount').textContent = data.players.length;
+
+                // Update participants list
+                const list = document.getElementById('participantsList');
+                list.innerHTML = '';
+                data.players.forEach(player => {
+                    const item = document.createElement('div');
+                    item.className = 'list-group-item d-flex justify-content-between align-items-center';
+                    item.innerHTML = `
+                        <div>
+                            <i class="bi bi-person-circle text-primary me-2"></i>
+                            <strong>${escapeHtml(player.nickname)}</strong>
+                            ${player.isHost ? '<span class="badge bg-warning text-dark ms-2"><i class="bi bi-star-fill"></i> Host</span>' : ''}
+                        </div>
+                    `;
+                    list.appendChild(item);
+                });
+
+                // Check if game started
+                if (data.status === 'IN_PROGRESS') {
+                    clearInterval(pollInterval);
+                    window.location.href = `/game/${sessionCode}/play`;
+                }
+            }
+        } catch (error) {
+            console.error('Error polling for updates:', error);
+        }
+    }
+
+    function leaveGame() {
+        if (confirm('Are you sure you want to leave the game?')) {
+            clearInterval(pollInterval);
+            window.location.href = '{{ path('app_quiz_index') }}';
+        }
+    }
+
+    function escapeHtml(text) {
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    }
+
+    // Cleanup on page unload
+    window.addEventListener('beforeunload', function() {
+        clearInterval(pollInterval);
+    });
+</script>
+{% endblock %}

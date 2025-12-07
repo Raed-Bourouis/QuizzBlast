@@ -22,6 +22,9 @@ class GameParticipant
     private ?int $totalScore = null;
 
     #[ORM\Column]
+    private ?bool $isHost = false;
+
+    #[ORM\Column]
     private ?\DateTimeImmutable $joinedAt = null;
 
     #[ORM\ManyToOne(inversedBy: 'participants')]
@@ -68,6 +71,25 @@ class GameParticipant
     public function setTotalScore(int $totalScore): static
     {
         $this->totalScore = $totalScore;
+
+        return $this;
+    }
+
+    public function isHost(): ?bool
+    {
+        return $this->isHost;
+    }
+
+    public function setIsHost(bool $isHost): static
+    {
+        $this->isHost = $isHost;
+
+        return $this;
+    }
+
+    public function addScore(int $points): static
+    {
+        $this->totalScore += $points;
 
         return $this;
     }

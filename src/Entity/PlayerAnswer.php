@@ -20,6 +20,9 @@ class PlayerAnswer
     private ?int $timeToAnswer = null;
 
     #[ORM\Column]
+    private ?bool $isCorrect = null;
+
+    #[ORM\Column]
     private ?\DateTimeImmutable $answeredAt = null;
 
     #[ORM\ManyToOne(inversedBy: 'playerAnswers')]
@@ -61,6 +64,18 @@ class PlayerAnswer
     public function setTimeToAnswer(int $timeToAnswer): static
     {
         $this->timeToAnswer = $timeToAnswer;
+
+        return $this;
+    }
+
+    public function isCorrect(): ?bool
+    {
+        return $this->isCorrect;
+    }
+
+    public function setIsCorrect(bool $isCorrect): static
+    {
+        $this->isCorrect = $isCorrect;
 
         return $this;
     }
