@@ -53,18 +53,10 @@ final class QuizController extends AbstractController
             // Set the creator
             $quiz->setCreatedBy($this->getUser());
             
-            // CRITICAL FIX: Ensure all relationships are properly set
-            foreach ($quiz->getQuestions() as $question) {
-                // Make sure the question knows its quiz
-                $question->setQuiz($quiz);
-                
-                // Make sure all answers know their question
-                foreach ($question->getAnswers() as $answer) {
-                    $answer->setQuestion($question);
-                }
-            }
+            // CRITICAL FIX: Synchronize relationships before persistence
+            $this->synchronizeQuizRelationships($quiz);
             
-            // Persist the quiz (cascade will handle questions and answers)
+            // Persist the quiz (cascade operations will persist questions and answers)
             $entityManager->persist($quiz);
             $entityManager->flush();
 
@@ -99,14 +91,8 @@ final class QuizController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            // CRITICAL FIX: Ensure all relationships are properly maintained during edit
-            foreach ($quiz->getQuestions() as $question) {
-                $question->setQuiz($quiz);
-                
-                foreach ($question->getAnswers() as $answer) {
-                    $answer->setQuestion($question);
-                }
-            }
+            // CRITICAL FIX: Synchronize relationships before flush
+            $this->synchronizeQuizRelationships($quiz);
             
             $entityManager->flush();
 
@@ -137,5 +123,20 @@ final class QuizController extends AbstractController
         }
 
         return $this->redirectToRoute('app_quiz_index', [], Response::HTTP_SEE_OTHER);
+    }
+
+    /**
+     * Synchronizes bidirectional relationships for Quiz → Question → Answer.
+     * This ensures Doctrine can properly track and persist the entire object graph.
+     */
+    private function synchronizeQuizRelationships(Quiz $quiz): void
+    {
+        foreach ($quiz->getQuestions() as $question) {
+            $question->setQuiz($quiz);
+            
+            foreach ($question->getAnswers() as $answer) {
+                $answer->setQuestion($question);
+            }
+        }
     }
 }
