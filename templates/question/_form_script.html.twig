@@ -224,19 +224,18 @@ function addAnswer(collection) {
     const row = document.createElement('div');
     row.className = 'row align-items-end';
     
-    // Parse the prototype HTML to extract form fields
-    const tempDiv = document.createElement('div');
-    tempDiv.innerHTML = newForm;
+    // Use DOMParser for safer HTML parsing (XSS prevention)
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(newForm, 'text/html');
     
-    // Extract form fields - they should be in div elements
-    const formFields = tempDiv.children;
+    // Extract form fields - collect them into an array first to avoid shifting indices
+    const formFieldsArray = Array.from(doc.body.children);
     
-    // Create columns for each field with proper Bootstrap classes
     // Field 1: Answer text (col-md-7)
     const textCol = document.createElement('div');
     textCol.className = 'col-md-7';
-    if (formFields.length > 0) {
-        const textField = formFields[0];
+    if (formFieldsArray.length > 0) {
+        const textField = formFieldsArray[0];
         // Add label and form control styling
         const label = textField.querySelector('label');
         if (label) {
@@ -254,8 +253,8 @@ function addAnswer(collection) {
     // Field 2: isCorrect checkbox (col-md-2)
     const correctCol = document.createElement('div');
     correctCol.className = 'col-md-2';
-    if (formFields.length > 1) {
-        const correctField = formFields[0]; // After appending, index shifts
+    if (formFieldsArray.length > 1) {
+        const correctField = formFieldsArray[1];
         const formCheck = document.createElement('div');
         formCheck.className = 'form-check';
         const checkbox = correctField.querySelector('input[type="checkbox"]');
@@ -275,8 +274,8 @@ function addAnswer(collection) {
     // Field 3: Order index (col-md-2)
     const orderCol = document.createElement('div');
     orderCol.className = 'col-md-2';
-    if (formFields.length > 0) {
-        const orderField = formFields[0]; // After appending, index shifts again
+    if (formFieldsArray.length > 2) {
+        const orderField = formFieldsArray[2];
         const input = orderField.querySelector('input[type="number"]');
         if (input) {
             input.className = 'form-control form-control-sm';
