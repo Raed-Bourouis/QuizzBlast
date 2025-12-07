@@ -50,13 +50,12 @@ final class QuizController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            // Set the creator
             $quiz->setCreatedBy($this->getUser());
             
-            // CRITICAL FIX: Synchronize relationships before persistence
+            // Synchronize bidirectional relationships
             $this->synchronizeQuizRelationships($quiz);
             
-            // Persist the quiz (cascade operations will persist questions and answers)
+            // Persist the quiz and related entities
             $entityManager->persist($quiz);
             $entityManager->flush();
 
@@ -91,7 +90,7 @@ final class QuizController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            // CRITICAL FIX: Synchronize relationships before flush
+            // Synchronize bidirectional relationships
             $this->synchronizeQuizRelationships($quiz);
             
             $entityManager->flush();
