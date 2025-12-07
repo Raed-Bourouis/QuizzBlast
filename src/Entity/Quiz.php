@@ -33,10 +33,10 @@ class Quiz
     private ?string $category = 'General';
 
     #[ORM\Column]
-    private ?bool $isPublic = null;
+    private ?bool $isPublic = false;
 
     #[ORM\Column]
-    private ?bool $isActive = null;
+    private ?bool $isActive = true;
 
     #[ORM\Column]
     private ?\DateTimeImmutable $createdAt = null;
