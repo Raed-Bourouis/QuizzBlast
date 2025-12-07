@@ -21,12 +21,12 @@ class Answer
 
     #[ORM\Column]
     #[Assert\NotNull(message: 'Please specify if this answer is correct')]
-    private ?bool $isCorrect = null;
+    private ?bool $isCorrect = false;
 
     #[ORM\Column]
     #[Assert\NotBlank(message: 'Order index is required')]
     #[Assert\PositiveOrZero(message: 'Order index must be zero or positive')]
-    private ?int $orderIndex = null;
+    private ?int $orderIndex = 0;
 
     #[ORM\ManyToOne(inversedBy: 'answers')]
     private ?Question $question = null;
