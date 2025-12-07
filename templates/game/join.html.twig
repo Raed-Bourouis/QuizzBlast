@@ -1,0 +1,115 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Join Game - QuizzBlast{% endblock %}
+
+{% block body %}
+<div class="container my-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-6 col-md-8">
+            <div class="card card-custom fade-in-up">
+                <div class="card-body p-5">
+                    <div class="text-center mb-4">
+                        <h1 class="display-5 fw-bold mb-2">
+                            <i class="bi bi-box-arrow-in-right text-primary"></i>
+                            Join Game
+                        </h1>
+                        <p class="text-muted">Enter the 6-digit game code to join</p>
+                    </div>
+
+                    <form id="joinGameForm">
+                        <div class="mb-4">
+                            <label for="gameCode" class="form-label fw-semibold">Game Code</label>
+                            <input 
+                                type="text" 
+                                class="form-control form-control-lg text-center" 
+                                id="gameCode" 
+                                name="gameCode"
+                                placeholder="Enter 6-digit code"
+                                maxlength="6"
+                                pattern="[A-Z0-9]{6}"
+                                required
+                                style="font-size: 2rem; letter-spacing: 0.5rem; font-weight: bold;"
+                            >
+                            <div class="form-text text-center">The code is case-insensitive</div>
+                        </div>
+
+                        <div id="errorMessage" class="alert alert-danger d-none" role="alert">
+                            <i class="bi bi-exclamation-triangle-fill"></i>
+                            <span id="errorText"></span>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary-custom w-100 py-3" id="joinButton">
+                            <i class="bi bi-play-circle-fill"></i> Join Game
+                        </button>
+                    </form>
+
+                    <div class="text-center mt-4">
+                        <a href="{{ path('app_quiz_index') }}" class="text-decoration-none">
+                            <i class="bi bi-arrow-left"></i> Back to Quizzes
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const form = document.getElementById('joinGameForm');
+    const codeInput = document.getElementById('gameCode');
+    const errorDiv = document.getElementById('errorMessage');
+    const errorText = document.getElementById('errorText');
+    const joinButton = document.getElementById('joinButton');
+
+    // Auto-uppercase input
+    codeInput.addEventListener('input', function() {
+        this.value = this.value.toUpperCase();
+    });
+
+    form.addEventListener('submit', async function(e) {
+        e.preventDefault();
+        
+        const code = codeInput.value.trim().toUpperCase();
+        
+        if (code.length !== 6) {
+            showError('Please enter a valid 6-digit code');
+            return;
+        }
+
+        // Disable button during request
+        joinButton.disabled = true;
+        joinButton.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Joining...';
+        errorDiv.classList.add('d-none');
+
+        try {
+            const response = await fetch(`/api/game/session/join/${code}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                }
+            });
+
+            const data = await response.json();
+
+            if (response.ok) {
+                // Success - redirect to lobby
+                window.location.href = `/game/${code}/lobby`;
+            } else {
+                showError(data.error || 'Failed to join game');
+                joinButton.disabled = false;
+                joinButton.innerHTML = '<i class="bi bi-play-circle-fill"></i> Join Game';
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            showError('Network error. Please try again.');
+            joinButton.disabled = false;
+            joinButton.innerHTML = '<i class="bi bi-play-circle-fill"></i> Join Game';
+        }
+    });
+
+    function showError(message) {
+        errorText.textContent = message;
+        errorDiv.classList.remove('d-none');
+    }
+</script>
+{% endblock %}
