@@ -51,6 +51,11 @@ function initializeExistingQuestions() {
 }
 
 function addQuestion(collection) {
+    if (!collection) {
+        console.error('Questions collection not found');
+        return;
+    }
+    
     const prototype = collection.getAttribute('data-prototype');
     if (!prototype) {
         console.error('No prototype found for questions collection');
@@ -58,7 +63,7 @@ function addQuestion(collection) {
     }
     
     let index = parseInt(collection.getAttribute('data-index'));
-    if (isNaN(index)) {
+    if (isNaN(index) || index < 0) {
         index = 0;
     }
     
@@ -83,30 +88,34 @@ function addQuestion(collection) {
         wrapper.insertBefore(badge, wrapper.firstChild);
     }
     
+    // Apply consistent styling to form fields in the dynamically added question
+    applyQuestionFieldStyling(wrapper);
+    
     // Initialize the answers collection in the new question
     // Try to find by class first, then by data-prototype attribute (for dynamically added questions)
     let answersCollection = wrapper.querySelector('.answers-collection');
     if (!answersCollection) {
         // Look for the CollectionType for answers by finding an element with data-prototype
-        // We look for nested collections (not the top-level questions collection)
-        // NOTE: This assumes the first nested CollectionType is the answers collection.
-        // If additional nested CollectionTypes are added in the future, this logic may need
-        // to be updated to use a more specific selector (e.g., based on field name or data attribute).
+        // that contains 'answers' in the field name pattern
         const potentialCollections = wrapper.querySelectorAll('[data-prototype]');
         for (const collection of potentialCollections) {
             // Check if this is nested within the question (not the questions collection itself)
             if (wrapper.contains(collection) && collection !== wrapper) {
-                answersCollection = collection;
-                // Add the class for consistency
-                answersCollection.classList.add('answers-collection');
-                break;
+                // Additional check: verify this is the answers collection by checking the prototype content
+                const prototypeContent = collection.getAttribute('data-prototype');
+                if (prototypeContent && prototypeContent.includes('[answers]')) {
+                    answersCollection = collection;
+                    // Add the class for consistency
+                    answersCollection.classList.add('answers-collection');
+                    break;
+                }
             }
         }
     }
     
     if (answersCollection) {
         const currentAnswerIndex = answersCollection.getAttribute('data-index');
-        if (!currentAnswerIndex) {
+        if (!currentAnswerIndex || isNaN(parseInt(currentAnswerIndex))) {
             answersCollection.setAttribute('data-index', '0');
         }
         
@@ -150,6 +159,8 @@ function addQuestion(collection) {
             // Insert add answer button after answers collection
             parentNode.insertBefore(addAnswerBtn, answersCollection.nextSibling);
         }
+    } else {
+        console.warn('Could not find answers collection for the new question. Answers may not be manageable.');
     }
     
     // Add "Remove Question" button
@@ -175,15 +186,23 @@ function addQuestion(collection) {
 
 function removeQuestion(button) {
     const questionItem = button.closest('.question-item');
-    if (questionItem) {
-        if (confirm('Are you sure you want to remove this question?')) {
-            questionItem.remove();
-            updateQuestionNumbers();
-        }
+    if (!questionItem) {
+        console.error('Could not find question item to remove');
+        return;
+    }
+    
+    if (confirm('Are you sure you want to remove this question?')) {
+        questionItem.remove();
+        updateQuestionNumbers();
     }
 }
 
 function addAnswer(collection) {
+    if (!collection) {
+        console.error('Answers collection not found');
+        return;
+    }
+    
     const prototype = collection.getAttribute('data-prototype');
     if (!prototype) {
         console.error('No prototype found for answers collection');
@@ -191,29 +210,87 @@ function addAnswer(collection) {
     }
     
     let index = parseInt(collection.getAttribute('data-index'));
-    if (isNaN(index)) {
+    if (isNaN(index) || index < 0) {
         index = 0;
     }
     
     let newForm = prototype.replace(/__name__/g, index);
     
+    // Create wrapper with proper structure
     const wrapper = document.createElement('div');
-    wrapper.classList.add('nested-collection', 'answer-item');
-    wrapper.innerHTML = newForm;
+    wrapper.classList.add('nested-collection', 'answer-item', 'mb-2');
     
-    // Find or create the row structure for the answer
-    let row = wrapper.querySelector('.row');
-    if (!row) {
-        row = document.createElement('div');
-        row.className = 'row align-items-end';
-        // Move all children to the row
-        while (wrapper.firstChild) {
-            row.appendChild(wrapper.firstChild);
+    // Create row container
+    const row = document.createElement('div');
+    row.className = 'row align-items-end';
+    
+    // Parse the prototype HTML to extract form fields
+    const tempDiv = document.createElement('div');
+    tempDiv.innerHTML = newForm;
+    
+    // Extract form fields - they should be in div elements
+    const formFields = tempDiv.children;
+    
+    // Create columns for each field with proper Bootstrap classes
+    // Field 1: Answer text (col-md-7)
+    const textCol = document.createElement('div');
+    textCol.className = 'col-md-7';
+    if (formFields.length > 0) {
+        const textField = formFields[0];
+        // Add label and form control styling
+        const label = textField.querySelector('label');
+        if (label) {
+            label.className = 'form-label small';
+            label.textContent = 'Answer Text';
         }
-        wrapper.appendChild(row);
+        const input = textField.querySelector('input[type="text"]');
+        if (input) {
+            input.className = 'form-control form-control-sm';
+        }
+        textCol.appendChild(textField);
     }
+    row.appendChild(textCol);
     
-    // Add "Remove Answer" button
+    // Field 2: isCorrect checkbox (col-md-2)
+    const correctCol = document.createElement('div');
+    correctCol.className = 'col-md-2';
+    if (formFields.length > 1) {
+        const correctField = formFields[0]; // After appending, index shifts
+        const formCheck = document.createElement('div');
+        formCheck.className = 'form-check';
+        const checkbox = correctField.querySelector('input[type="checkbox"]');
+        if (checkbox) {
+            checkbox.className = 'form-check-input';
+            checkbox.checked = false; // Ensure default is unchecked
+        }
+        const label = correctField.querySelector('label');
+        if (label) {
+            label.className = 'form-check-label small';
+        }
+        formCheck.appendChild(correctField);
+        correctCol.appendChild(formCheck);
+    }
+    row.appendChild(correctCol);
+    
+    // Field 3: Order index (col-md-2)
+    const orderCol = document.createElement('div');
+    orderCol.className = 'col-md-2';
+    if (formFields.length > 0) {
+        const orderField = formFields[0]; // After appending, index shifts again
+        const input = orderField.querySelector('input[type="number"]');
+        if (input) {
+            input.className = 'form-control form-control-sm';
+            input.placeholder = 'Order';
+            input.value = index; // Set default order to current index
+        }
+        orderCol.appendChild(orderField);
+    }
+    row.appendChild(orderCol);
+    
+    // Create remove button column (col-md-1)
+    const removeCol = document.createElement('div');
+    removeCol.className = 'col-md-1';
+    
     const removeBtn = document.createElement('button');
     removeBtn.type = 'button';
     removeBtn.className = 'btn btn-remove-item remove-answer w-100';
@@ -226,29 +303,79 @@ function addAnswer(collection) {
         removeAnswer(removeBtn);
     });
     
-    // Create a column for the remove button
-    const removeCol = document.createElement('div');
-    removeCol.className = 'col-md-1';
     removeCol.appendChild(removeBtn);
     row.appendChild(removeCol);
     
+    wrapper.appendChild(row);
     collection.appendChild(wrapper);
     collection.setAttribute('data-index', index + 1);
 }
 
 function removeAnswer(button) {
     const answerItem = button.closest('.answer-item');
-    if (answerItem) {
-        const answersCollection = answerItem.closest('.answers-collection');
-        const answerCount = answersCollection ? answersCollection.querySelectorAll('.answer-item').length : 0;
-        
-        if (answerCount <= MINIMUM_ANSWER_COUNT) {
-            alert(`A question must have at least ${MINIMUM_ANSWER_COUNT} answers.`);
-            return;
-        }
-        
-        answerItem.remove();
+    if (!answerItem) {
+        console.error('Could not find answer item to remove');
+        return;
     }
+    
+    const answersCollection = answerItem.closest('.answers-collection');
+    if (!answersCollection) {
+        console.error('Could not find answers collection');
+        return;
+    }
+    
+    const answerCount = answersCollection.querySelectorAll('.answer-item').length;
+    
+    if (answerCount <= MINIMUM_ANSWER_COUNT) {
+        alert(`A question must have at least ${MINIMUM_ANSWER_COUNT} answers.`);
+        return;
+    }
+    
+    answerItem.remove();
+}
+
+function applyQuestionFieldStyling(questionWrapper) {
+    // Apply consistent CSS classes to dynamically added question fields
+    
+    // Style text inputs and textareas
+    const textInputs = questionWrapper.querySelectorAll('input[type="text"], textarea');
+    textInputs.forEach(input => {
+        if (!input.classList.contains('form-control')) {
+            input.classList.add('form-control');
+        }
+    });
+    
+    // Style number inputs
+    const numberInputs = questionWrapper.querySelectorAll('input[type="number"]');
+    numberInputs.forEach(input => {
+        if (!input.classList.contains('form-control')) {
+            input.classList.add('form-control');
+        }
+    });
+    
+    // Style select elements
+    const selects = questionWrapper.querySelectorAll('select');
+    selects.forEach(select => {
+        if (!select.classList.contains('form-select')) {
+            select.classList.add('form-select');
+        }
+    });
+    
+    // Style checkboxes
+    const checkboxes = questionWrapper.querySelectorAll('input[type="checkbox"]');
+    checkboxes.forEach(checkbox => {
+        if (!checkbox.classList.contains('form-check-input')) {
+            checkbox.classList.add('form-check-input');
+        }
+    });
+    
+    // Style labels
+    const labels = questionWrapper.querySelectorAll('label');
+    labels.forEach(label => {
+        if (!label.classList.contains('form-label')) {
+            label.classList.add('form-label');
+        }
+    });
 }
 
 function updateQuestionNumbers() {
