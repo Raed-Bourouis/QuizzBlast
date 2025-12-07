@@ -74,7 +74,12 @@ function addQuestion(collection) {
     if (!existingBadge) {
         const badge = document.createElement('div');
         badge.className = 'question-number-badge';
-        badge.innerHTML = `<i class="bi bi-question-circle-fill"></i> Question #${index + 1}`;
+        
+        const icon = document.createElement('i');
+        icon.className = 'bi bi-question-circle-fill';
+        badge.appendChild(icon);
+        badge.appendChild(document.createTextNode(' Question #' + (index + 1)));
+        
         wrapper.insertBefore(badge, wrapper.firstChild);
     }
     
@@ -145,7 +150,12 @@ function addQuestion(collection) {
     const removeBtn = document.createElement('button');
     removeBtn.type = 'button';
     removeBtn.className = 'btn btn-remove-item remove-question mt-2 float-end';
-    removeBtn.innerHTML = '<i class="bi bi-trash-fill"></i> Remove Question';
+    
+    const removeIcon = document.createElement('i');
+    removeIcon.className = 'bi bi-trash-fill';
+    removeBtn.appendChild(removeIcon);
+    removeBtn.appendChild(document.createTextNode(' Remove Question'));
+    
     removeBtn.addEventListener('click', function() {
         removeQuestion(removeBtn);
     });
@@ -201,7 +211,11 @@ function addAnswer(collection) {
     const removeBtn = document.createElement('button');
     removeBtn.type = 'button';
     removeBtn.className = 'btn btn-remove-item remove-answer w-100';
-    removeBtn.innerHTML = '<i class="bi bi-x-lg"></i>';
+    
+    const removeIcon = document.createElement('i');
+    removeIcon.className = 'bi bi-x-lg';
+    removeBtn.appendChild(removeIcon);
+    
     removeBtn.addEventListener('click', function() {
         removeAnswer(removeBtn);
     });
@@ -236,12 +250,20 @@ function updateQuestionNumbers() {
     questionItems.forEach((item, index) => {
         const badge = item.querySelector('.question-number-badge');
         if (badge) {
-            badge.innerHTML = `<i class="bi bi-question-circle-fill"></i> Question #${index + 1}`;
+            // Clear existing content
+            while (badge.firstChild) {
+                badge.removeChild(badge.firstChild);
+            }
+            // Add icon and text safely
+            const icon = document.createElement('i');
+            icon.className = 'bi bi-question-circle-fill';
+            badge.appendChild(icon);
+            badge.appendChild(document.createTextNode(' Question #' + (index + 1)));
         }
         // Also update h5 headers for simpler styled versions
         const header = item.querySelector('h5');
         if (header && header.textContent.includes('Question #')) {
-            header.textContent = `Question #${index + 1}`;
+            header.textContent = 'Question #' + (index + 1);
         }
     });
 }
