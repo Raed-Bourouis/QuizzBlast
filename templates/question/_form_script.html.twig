@@ -82,11 +82,17 @@ function addQuestion(collection) {
     // Try to find by class first, then by data-prototype attribute (for dynamically added questions)
     let answersCollection = wrapper.querySelector('.answers-collection');
     if (!answersCollection) {
-        // Look for any element with a data-prototype attribute (the CollectionType for answers)
-        answersCollection = wrapper.querySelector('[data-prototype]');
-        if (answersCollection) {
-            // Add the class for consistency
-            answersCollection.classList.add('answers-collection');
+        // Look for the CollectionType for answers by finding an element with data-prototype
+        // We look for nested collections (not the top-level questions collection)
+        const potentialCollections = wrapper.querySelectorAll('[data-prototype]');
+        for (const collection of potentialCollections) {
+            // Check if this is nested within the question (not the questions collection itself)
+            if (wrapper.contains(collection) && collection !== wrapper) {
+                answersCollection = collection;
+                // Add the class for consistency
+                answersCollection.classList.add('answers-collection');
+                break;
+            }
         }
     }
     
@@ -97,26 +103,41 @@ function addQuestion(collection) {
         }
         
         // Add answers header if it doesn't exist
-        const existingHeader = answersCollection.parentNode ? answersCollection.parentNode.querySelector('.answers-header') : null;
-        if (!existingHeader && answersCollection.parentNode) {
-            const answersHeader = document.createElement('div');
-            answersHeader.className = 'answers-header';
-            answersHeader.innerHTML = '<i class="bi bi-check-square-fill"></i> Answer Options';
-            answersCollection.parentNode.insertBefore(answersHeader, answersCollection);
-        }
-        
-        // Add "Add Answer" button
-        const addAnswerBtn = document.createElement('button');
-        addAnswerBtn.type = 'button';
-        addAnswerBtn.className = 'btn btn-sm btn-outline-primary add-answer mt-2';
-        addAnswerBtn.innerHTML = '<i class="bi bi-plus-circle"></i> Add Answer';
-        addAnswerBtn.addEventListener('click', function() {
-            addAnswer(answersCollection);
-        });
-        
-        // Insert add answer button after answers collection
-        if (answersCollection.parentNode) {
-            answersCollection.parentNode.insertBefore(addAnswerBtn, answersCollection.nextSibling);
+        const parentNode = answersCollection.parentNode;
+        if (parentNode) {
+            const existingHeader = parentNode.querySelector('.answers-header');
+            if (!existingHeader) {
+                const answersHeader = document.createElement('div');
+                answersHeader.className = 'answers-header';
+                
+                // Create icon element
+                const icon = document.createElement('i');
+                icon.className = 'bi bi-check-square-fill';
+                answersHeader.appendChild(icon);
+                
+                // Add text node
+                answersHeader.appendChild(document.createTextNode(' Answer Options'));
+                
+                parentNode.insertBefore(answersHeader, answersCollection);
+            }
+            
+            // Add "Add Answer" button
+            const addAnswerBtn = document.createElement('button');
+            addAnswerBtn.type = 'button';
+            addAnswerBtn.className = 'btn btn-sm btn-outline-primary add-answer mt-2';
+            
+            // Create icon for button
+            const btnIcon = document.createElement('i');
+            btnIcon.className = 'bi bi-plus-circle';
+            addAnswerBtn.appendChild(btnIcon);
+            addAnswerBtn.appendChild(document.createTextNode(' Add Answer'));
+            
+            addAnswerBtn.addEventListener('click', function() {
+                addAnswer(answersCollection);
+            });
+            
+            // Insert add answer button after answers collection
+            parentNode.insertBefore(addAnswerBtn, answersCollection.nextSibling);
         }
     }
     
