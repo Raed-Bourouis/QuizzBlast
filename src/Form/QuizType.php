@@ -50,6 +50,7 @@ class QuizType extends AbstractType
                 'allow_delete' => true,
                 'by_reference' => false,
                 'label' => 'Questions',
+                'prototype_name' => '__question__',
             ])
         ;
     }

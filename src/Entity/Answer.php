@@ -29,6 +29,7 @@ class Answer
     private ?int $orderIndex = 0;
 
     #[ORM\ManyToOne(inversedBy: 'answers')]
+    #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]
     private ?Question $question = null;
 
     public function getId(): ?int

@@ -23,7 +23,7 @@
 
                     <h2>Participants</h2>
                     <ul id="participants">
-                        {% for participant in session.gameParticipants %}
+                        {% for participant in session.participants %}
                             <li id="participant-{{ participant.id }}">
                                 {{ participant.nickname }} - <span id="score-{{ participant.id }}">{{ participant.totalScore }}</span> points
                             </li>

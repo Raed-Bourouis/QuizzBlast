@@ -47,6 +47,7 @@ class Question
     private ?string $mediaUrl = null;
 
     #[ORM\ManyToOne(inversedBy: 'questions')]
+    #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]
     private ?Quiz $quiz = null;
 
     /**
