@@ -51,9 +51,15 @@ final class QuizController extends AbstractController
 
         if ($form->isSubmitted() && $form->isValid()) {
             $quiz->setCreatedBy($this->getUser());
+            
+            // Synchronize bidirectional relationships
+            $this->synchronizeQuizRelationships($quiz);
+            
+            // Persist the quiz and related entities
             $entityManager->persist($quiz);
             $entityManager->flush();
 
+            $this->addFlash('success', 'Quiz created successfully!');
             return $this->redirectToRoute('app_quiz_show', ['id' => $quiz->getId()], Response::HTTP_SEE_OTHER);
         }
 
@@ -84,8 +90,12 @@ final class QuizController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
+            // Synchronize bidirectional relationships
+            $this->synchronizeQuizRelationships($quiz);
+            
             $entityManager->flush();
 
+            $this->addFlash('success', 'Quiz updated successfully!');
             return $this->redirectToRoute('app_quiz_show', ['id' => $quiz->getId()], Response::HTTP_SEE_OTHER);
         }
 
@@ -107,8 +117,25 @@ final class QuizController extends AbstractController
         if ($this->isCsrfTokenValid('delete'.$quiz->getId(), $request->getPayload()->getString('_token'))) {
             $entityManager->remove($quiz);
             $entityManager->flush();
+            
+            $this->addFlash('success', 'Quiz deleted successfully!');
         }
 
         return $this->redirectToRoute('app_quiz_index', [], Response::HTTP_SEE_OTHER);
+    }
+
+    /**
+     * Synchronizes bidirectional relationships for Quiz → Question → Answer.
+     * This ensures Doctrine can properly track and persist the entire object graph.
+     */
+    private function synchronizeQuizRelationships(Quiz $quiz): void
+    {
+        foreach ($quiz->getQuestions() as $question) {
+            $question->setQuiz($quiz);
+            
+            foreach ($question->getAnswers() as $answer) {
+                $answer->setQuestion($question);
+            }
+        }
     }
 }
