@@ -79,11 +79,30 @@ function addQuestion(collection) {
     }
     
     // Initialize the answers collection in the new question
-    const answersCollection = wrapper.querySelector('.answers-collection');
+    // Try to find by class first, then by data-prototype attribute (for dynamically added questions)
+    let answersCollection = wrapper.querySelector('.answers-collection');
+    if (!answersCollection) {
+        // Look for any element with a data-prototype attribute (the CollectionType for answers)
+        answersCollection = wrapper.querySelector('[data-prototype]');
+        if (answersCollection) {
+            // Add the class for consistency
+            answersCollection.classList.add('answers-collection');
+        }
+    }
+    
     if (answersCollection) {
         const currentAnswerIndex = answersCollection.getAttribute('data-index');
         if (!currentAnswerIndex) {
             answersCollection.setAttribute('data-index', '0');
+        }
+        
+        // Add answers header if it doesn't exist
+        const existingHeader = answersCollection.parentNode ? answersCollection.parentNode.querySelector('.answers-header') : null;
+        if (!existingHeader && answersCollection.parentNode) {
+            const answersHeader = document.createElement('div');
+            answersHeader.className = 'answers-header';
+            answersHeader.innerHTML = '<i class="bi bi-check-square-fill"></i> Answer Options';
+            answersCollection.parentNode.insertBefore(answersHeader, answersCollection);
         }
         
         // Add "Add Answer" button
