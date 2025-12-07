@@ -50,10 +50,25 @@ final class QuizController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
+            // Set the creator
             $quiz->setCreatedBy($this->getUser());
+            
+            // CRITICAL FIX: Ensure all relationships are properly set
+            foreach ($quiz->getQuestions() as $question) {
+                // Make sure the question knows its quiz
+                $question->setQuiz($quiz);
+                
+                // Make sure all answers know their question
+                foreach ($question->getAnswers() as $answer) {
+                    $answer->setQuestion($question);
+                }
+            }
+            
+            // Persist the quiz (cascade will handle questions and answers)
             $entityManager->persist($quiz);
             $entityManager->flush();
 
+            $this->addFlash('success', 'Quiz created successfully!');
             return $this->redirectToRoute('app_quiz_show', ['id' => $quiz->getId()], Response::HTTP_SEE_OTHER);
         }
 
@@ -84,8 +99,18 @@ final class QuizController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
+            // CRITICAL FIX: Ensure all relationships are properly maintained during edit
+            foreach ($quiz->getQuestions() as $question) {
+                $question->setQuiz($quiz);
+                
+                foreach ($question->getAnswers() as $answer) {
+                    $answer->setQuestion($question);
+                }
+            }
+            
             $entityManager->flush();
 
+            $this->addFlash('success', 'Quiz updated successfully!');
             return $this->redirectToRoute('app_quiz_show', ['id' => $quiz->getId()], Response::HTTP_SEE_OTHER);
         }
 
@@ -107,6 +132,8 @@ final class QuizController extends AbstractController
         if ($this->isCsrfTokenValid('delete'.$quiz->getId(), $request->getPayload()->getString('_token'))) {
             $entityManager->remove($quiz);
             $entityManager->flush();
+            
+            $this->addFlash('success', 'Quiz deleted successfully!');
         }
 
         return $this->redirectToRoute('app_quiz_index', [], Response::HTTP_SEE_OTHER);
