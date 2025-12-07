@@ -282,4 +282,46 @@ class GameController extends AbstractController
             'players' => $players,
         ]);
     }
+
+    #[Route('/session/{id}/question', name: 'game_get_question', methods: ['GET'])]
+    public function getCurrentQuestion(int $id): JsonResponse
+    {
+        $session = $this->sessionRepo->find($id);
+        if (!$session) {
+            return $this->json(['error' => 'Session not found'], 404);
+        }
+
+        $questions = $session->getQuiz()->getQuestions()->getValues();
+        $currentIndex = $session->getCurrentQuestionIndex();
+
+        if ($currentIndex >= count($questions)) {
+            return $this->json(['error' => 'No more questions'], 404);
+        }
+
+        $question = $questions[$currentIndex];
+        
+        $questionData = [
+            'id' => $question->getId(),
+            'text' => $question->getText(),
+            'questionType' => $question->getQuestionType(),
+            'points' => $question->getPoints(),
+            'timeLimit' => $question->getTimeLimit(),
+            'mediaUrl' => $question->getMediaUrl(),
+            'answers' => []
+        ];
+
+        foreach ($question->getAnswers() as $answer) {
+            $questionData['answers'][] = [
+                'id' => $answer->getId(),
+                'text' => $answer->getText(),
+                'orderIndex' => $answer->getOrderIndex()
+            ];
+        }
+
+        return $this->json([
+            'question' => $questionData,
+            'currentIndex' => $currentIndex,
+            'totalQuestions' => count($questions)
+        ]);
+    }
 }

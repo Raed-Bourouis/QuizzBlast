@@ -61,14 +61,15 @@
     const sessionId = {{ session.id }};
     const sessionCode = '{{ session.code }}';
     const participantId = {{ participant.id }};
-    const quizQuestions = {{ session.quiz.questions|json_encode|raw }};
     
     let currentQuestionIndex = {{ session.currentQuestionIndex }};
     let currentQuestion = null;
+    let totalQuestions = 0;
     let timerInterval = null;
     let pollInterval = null;
     let startTime = null;
     let answered = false;
+    let isLoading = false;
 
     // Start polling for game state
     pollInterval = setInterval(pollForGameState, 1000);
@@ -86,7 +87,7 @@
                 if (data.currentQuestionIndex !== currentQuestionIndex) {
                     currentQuestionIndex = data.currentQuestionIndex;
                     answered = false;
-                    loadQuestion();
+                    await loadQuestion();
                 }
 
                 // Check if game ended
@@ -101,47 +102,77 @@
         }
     }
 
-    function loadQuestion() {
-        if (currentQuestionIndex >= quizQuestions.length) {
+    async function loadQuestion() {
+        if (isLoading) return;
+        isLoading = true;
+
+        try {
+            const response = await fetch(`/api/game/session/${sessionId}/question`);
+            const data = await response.json();
+
+            if (!response.ok) {
+                if (response.status === 404 && data.error === 'No more questions') {
+                    document.getElementById('questionContent').classList.add('d-none');
+                    document.getElementById('waitingMessage').classList.remove('d-none');
+                    document.querySelector('#waitingMessage h4').textContent = 'Game ending...';
+                } else {
+                    console.error('Error loading question:', data.error);
+                    document.getElementById('questionContent').classList.add('d-none');
+                    document.getElementById('waitingMessage').classList.remove('d-none');
+                    document.querySelector('#waitingMessage h4').textContent = data.error || 'Error loading question';
+                }
+                isLoading = false;
+                return;
+            }
+
+            currentQuestion = data.question;
+            totalQuestions = data.totalQuestions;
+            
+            // Update question number
+            document.getElementById('questionNumber').textContent = data.currentIndex + 1;
+            document.getElementById('totalQuestions').textContent = totalQuestions;
+
+            // Display question
+            document.getElementById('questionText').textContent = currentQuestion.text;
+            
+            // Display answers
+            const answersContainer = document.getElementById('answersContainer');
+            answersContainer.innerHTML = '';
+            
+            // Sort answers by orderIndex
+            const sortedAnswers = [...currentQuestion.answers].sort((a, b) => a.orderIndex - b.orderIndex);
+            
+            sortedAnswers.forEach(answer => {
+                const button = document.createElement('button');
+                button.className = 'btn btn-outline-primary btn-lg text-start';
+                const icon = document.createElement('i');
+                icon.className = 'bi bi-circle me-2';
+                button.appendChild(icon);
+                button.appendChild(document.createTextNode(answer.text));
+                button.dataset.answerId = answer.id;
+                button.onclick = () => submitAnswer(answer.id);
+                answersContainer.appendChild(button);
+            });
+
+            // Reset feedback
+            document.getElementById('feedbackMessage').classList.add('d-none');
+
+            // Show question content
+            document.getElementById('waitingMessage').classList.add('d-none');
+            document.getElementById('questionContent').classList.remove('d-none');
+
+            // Start timer
+            startTimer(currentQuestion.timeLimit);
+            startTime = Date.now();
+            answered = false;
+        } catch (error) {
+            console.error('Error loading question:', error);
             document.getElementById('questionContent').classList.add('d-none');
             document.getElementById('waitingMessage').classList.remove('d-none');
-            document.querySelector('#waitingMessage h4').textContent = 'Game ending...';
-            return;
+            document.querySelector('#waitingMessage h4').textContent = 'Network error loading question';
+        } finally {
+            isLoading = false;
         }
-
-        currentQuestion = quizQuestions[currentQuestionIndex];
-        
-        // Update question number
-        document.getElementById('questionNumber').textContent = currentQuestionIndex + 1;
-        document.getElementById('totalQuestions').textContent = quizQuestions.length;
-
-        // Display question
-        document.getElementById('questionText').textContent = currentQuestion.text;
-        
-        // Display answers
-        const answersContainer = document.getElementById('answersContainer');
-        answersContainer.innerHTML = '';
-        
-        currentQuestion.answers.forEach(answer => {
-            const button = document.createElement('button');
-            button.className = 'btn btn-outline-primary btn-lg text-start';
-            button.innerHTML = `<i class="bi bi-circle me-2"></i>${escapeHtml(answer.text)}`;
-            button.dataset.answerId = answer.id;
-            button.onclick = () => submitAnswer(answer.id);
-            answersContainer.appendChild(button);
-        });
-
-        // Reset feedback
-        document.getElementById('feedbackMessage').classList.add('d-none');
-
-        // Show question content
-        document.getElementById('waitingMessage').classList.add('d-none');
-        document.getElementById('questionContent').classList.remove('d-none');
-
-        // Start timer
-        startTimer(currentQuestion.timeLimit);
-        startTime = Date.now();
-        answered = false;
     }
 
     function startTimer(seconds) {
@@ -219,7 +250,8 @@
             if (btn.dataset.answerId == answerId) {
                 btn.classList.remove('btn-outline-primary');
                 btn.classList.add(correct ? 'btn-success' : 'btn-danger');
-                btn.innerHTML = btn.innerHTML.replace('bi-circle', correct ? 'bi-check-circle-fill' : 'bi-x-circle-fill');
+                const icon = btn.querySelector('i');
+                icon.className = `bi bi-${correct ? 'check-circle-fill' : 'x-circle-fill'} me-2`;
             }
         });
     }
@@ -227,14 +259,12 @@
     function showFeedback(correct, points, message) {
         const feedback = document.getElementById('feedbackMessage');
         feedback.className = `alert mt-4 ${correct ? 'alert-success' : 'alert-danger'}`;
-        feedback.innerHTML = `<i class="bi bi-${correct ? 'check' : 'x'}-circle-fill"></i> ${message}`;
+        const icon = document.createElement('i');
+        icon.className = `bi bi-${correct ? 'check' : 'x'}-circle-fill`;
+        feedback.innerHTML = '';
+        feedback.appendChild(icon);
+        feedback.appendChild(document.createTextNode(` ${message}`));
         feedback.classList.remove('d-none');
-    }
-
-    function escapeHtml(text) {
-        const div = document.createElement('div');
-        div.textContent = text;
-        return div.innerHTML;
     }
 
     // Cleanup on page unload
