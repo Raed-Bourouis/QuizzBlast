@@ -17,7 +17,7 @@ class GameMasterController extends AbstractController
     /**
      * Démarrer une partie à partir d'un quiz
      */
-    #[Route('/game/start/{id}', name: 'game_start', methods: ['GET'])]
+    #[Route('/game/start/{id}', name: 'game_host_create', methods: ['GET'])]
     public function start(
         int $id,
         QuizRepository $quizRepo,

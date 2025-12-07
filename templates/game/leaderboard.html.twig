@@ -116,7 +116,7 @@
                             <i class="bi bi-collection-fill"></i> Browse Quizzes
                         </a>
                         {% if app.user and session.host == app.user %}
-                            <a href="{{ path('game_start', {'id': session.quiz.id}) }}" class="btn btn-outline-custom">
+                            <a href="{{ path('game_host_create', {'id': session.quiz.id}) }}" class="btn btn-outline-custom">
                                 <i class="bi bi-arrow-repeat"></i> Play Again
                             </a>
                         {% endif %}

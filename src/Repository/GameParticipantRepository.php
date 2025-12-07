@@ -25,6 +25,7 @@ class GameParticipantRepository extends ServiceEntityRepository
             ->andWhere('gp.user = :user')
             ->setParameter('session', $session)
             ->setParameter('user', $user)
+            ->getQuery()  // ← ADD THIS LINE
             ->getOneOrNullResult();
     }
 }

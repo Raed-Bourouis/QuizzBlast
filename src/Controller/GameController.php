@@ -21,11 +21,13 @@ use Symfony\Component\Routing\Annotation\Route;
 class GameController extends AbstractController
 {
     public function __construct(
-        private EntityManagerInterface $em,
-        private GameSessionRepository $sessionRepo,
+        private EntityManagerInterface    $em,
+        private GameSessionRepository     $sessionRepo,
         private GameParticipantRepository $participantRepo,
-        private PlayerAnswerRepository $playerAnswerRepo,
-    ) {}
+        private PlayerAnswerRepository    $playerAnswerRepo,
+    )
+    {
+    }
 
     // ---------- UTIL ----------
 
@@ -116,7 +118,7 @@ class GameController extends AbstractController
 
     // ---------- DAY 2 : START / NEXT / END ----------
 
-    #[Route('/session/{id}/start', name: 'game_start', methods: ['POST'])]
+    #[Route('/session/{id}/start', name: 'game_session_start', methods: ['POST'])]
     public function start(int $id): JsonResponse
     {
         $session = $this->sessionRepo->find($id);
@@ -131,7 +133,7 @@ class GameController extends AbstractController
         return $this->json(['status' => 'IN_PROGRESS']);
     }
 
-    #[Route('/session/{id}/next', name: 'game_next', methods: ['POST'])]
+    #[Route('/session/{id}/next', name: 'game_session_next', methods: ['POST'])]
     public function nextQuestion(int $id): JsonResponse
     {
         $session = $this->sessionRepo->find($id);
@@ -145,7 +147,7 @@ class GameController extends AbstractController
         ]);
     }
 
-    #[Route('/session/{id}/end', name: 'game_end', methods: ['POST'])]
+    #[Route('/session/{id}/end', name: 'game_session_end', methods: ['POST'])]
     public function end(int $id): JsonResponse
     {
         $session = $this->sessionRepo->find($id);
@@ -225,12 +227,12 @@ class GameController extends AbstractController
 
         if ($isCorrect) {
             $points = $question->getPoints();
-            
+
             // Time bonus: faster answers get more points (max 20% bonus)
             $timeLimit = $question->getTimeLimit() * 1000; // Convert to ms
             if ($timeMs < $timeLimit) {
                 $timeBonus = (1 - ($timeMs / $timeLimit)) * 0.2;
-                $points = (int) ($points * (1 + $timeBonus));
+                $points = (int)($points * (1 + $timeBonus));
             }
         }
 
@@ -258,6 +260,48 @@ class GameController extends AbstractController
 
     // ---------- "REAL-TIME" PAR POLLING ----------
 
+    #[Route('/session/{id}/question', name: 'game_get_question', methods: ['GET'])]
+    public function getCurrentQuestion(int $id): JsonResponse
+    {
+        $session = $this->sessionRepo->find($id);
+        if (!$session) {
+            return $this->json(['error' => 'Session not found'], 404);
+        }
+
+        $questions = $session->getQuiz()->getQuestions()->getValues();
+        $currentIndex = $session->getCurrentQuestionIndex();
+
+        if ($currentIndex >= count($questions)) {
+            return $this->json(['error' => 'No more questions'], 404);
+        }
+
+        $question = $questions[$currentIndex];
+
+        // Serialize question with answers
+        $questionData = [
+            'id' => $question->getId(),
+            'text' => $question->getText(),
+            'questionType' => $question->getQuestionType(),
+            'points' => $question->getPoints(),
+            'timeLimit' => $question->getTimeLimit(),
+            'mediaUrl' => $question->getMediaUrl(),
+            'answers' => []
+        ];
+
+        foreach ($question->getAnswers() as $answer) {
+            $questionData['answers'][] = [
+                'id' => $answer->getId(),
+                'text' => $answer->getText(),
+                'orderIndex' => $answer->getOrderIndex()
+            ];
+        }
+
+        return $this->json([
+            'question' => $questionData,
+            'currentIndex' => $currentIndex,
+            'totalQuestions' => count($questions)
+        ]);
+    }
     #[Route('/session/{id}/state', name: 'game_state', methods: ['GET'])]
     public function state(int $id): JsonResponse
     {

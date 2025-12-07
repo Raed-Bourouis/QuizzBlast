@@ -255,6 +255,17 @@
             box-shadow: 0 4px 12px rgba(239, 68, 68, 0.4);
         }
 
+        .btn-host {
+            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+            color: white;
+        }
+
+        .btn-host:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(245, 158, 11, 0.4);
+            color: white;
+        }
+
         .empty-dashboard {
             background: white;
             border-radius: 1.5rem;
@@ -393,6 +404,13 @@
                             <a href="{{ path('app_quiz_show', {id: quiz.id}) }}" class="btn-quiz-action btn-view">
                                 <i class="bi bi-eye-fill"></i> View
                             </a>
+
+                            {% if quiz.questions|length > 0 %}
+                                <a href="{{ path('game_host_create', {id: quiz.id}) }}" class="btn-quiz-action btn-host">
+                                    <i class="bi bi-play-circle-fill"></i> Host
+                                </a>
+                            {% endif %}
+
                             <a href="{{ path('app_quiz_edit', {id: quiz.id}) }}" class="btn-quiz-action btn-edit">
                                 <i class="bi bi-pencil-fill"></i> Edit
                             </a>

@@ -57,190 +57,209 @@
     </div>
 </div>
 
-<script>
-    const sessionId = {{ session.id }};
-    const sessionCode = '{{ session.code }}';
-    const participantId = {{ participant.id }};
-    const quizQuestions = {{ session.quiz.questions|json_encode|raw }};
-    
-    let currentQuestionIndex = {{ session.currentQuestionIndex }};
-    let currentQuestion = null;
-    let timerInterval = null;
-    let pollInterval = null;
-    let startTime = null;
-    let answered = false;
+    <script>
+        const sessionId = {{ session.id }};
+        const sessionCode = '{{ session.code }}';
+        const participantId = {{ participant.id }};
 
-    // Start polling for game state
-    pollInterval = setInterval(pollForGameState, 1000);
-    
-    // Initialize the first question
-    loadQuestion();
+        let currentQuestionIndex = {{ session.currentQuestionIndex }};
+        let currentQuestion = null;
+        let timerInterval = null;
+        let pollInterval = null;
+        let startTime = null;
+        let answered = false;
+        let totalQuestions = {{ session.quiz.questions|length }};
 
-    async function pollForGameState() {
-        try {
-            const response = await fetch(`/api/game/session/${sessionId}/state`);
-            const data = await response.json();
+        // Start polling for game state
+        pollInterval = setInterval(pollForGameState, 1000);
 
-            if (response.ok) {
-                // Check if question changed
-                if (data.currentQuestionIndex !== currentQuestionIndex) {
-                    currentQuestionIndex = data.currentQuestionIndex;
-                    answered = false;
-                    loadQuestion();
+        // Initialize the first question
+        loadQuestion();
+
+        async function pollForGameState() {
+            try {
+                const response = await fetch(`/api/game/session/${sessionId}/state`);
+                const data = await response.json();
+
+                if (response.ok) {
+                    // Check if question changed
+                    if (data.currentQuestionIndex !== currentQuestionIndex) {
+                        currentQuestionIndex = data.currentQuestionIndex;
+                        answered = false;
+                        await loadQuestion();
+                    }
+
+                    // Check if game ended
+                    if (data.status === 'FINISHED') {
+                        clearInterval(pollInterval);
+                        clearInterval(timerInterval);
+                        window.location.href = `/game/${sessionCode}/leaderboard`;
+                    }
                 }
-
-                // Check if game ended
-                if (data.status === 'FINISHED') {
-                    clearInterval(pollInterval);
-                    clearInterval(timerInterval);
-                    window.location.href = `/game/${sessionCode}/leaderboard`;
-                }
+            } catch (error) {
+                console.error('Error polling game state:', error);
             }
-        } catch (error) {
-            console.error('Error polling game state:', error);
-        }
-    }
-
-    function loadQuestion() {
-        if (currentQuestionIndex >= quizQuestions.length) {
-            document.getElementById('questionContent').classList.add('d-none');
-            document.getElementById('waitingMessage').classList.remove('d-none');
-            document.querySelector('#waitingMessage h4').textContent = 'Game ending...';
-            return;
         }
 
-        currentQuestion = quizQuestions[currentQuestionIndex];
-        
-        // Update question number
-        document.getElementById('questionNumber').textContent = currentQuestionIndex + 1;
-        document.getElementById('totalQuestions').textContent = quizQuestions.length;
+        async function loadQuestion() {
+            try {
+                // Show loading state
+                document.getElementById('questionContent').classList.add('d-none');
+                document.getElementById('waitingMessage').classList.remove('d-none');
+                document.querySelector('#waitingMessage h4').textContent = 'Loading question...';
 
-        // Display question
-        document.getElementById('questionText').textContent = currentQuestion.text;
-        
-        // Display answers
-        const answersContainer = document.getElementById('answersContainer');
-        answersContainer.innerHTML = '';
-        
-        currentQuestion.answers.forEach(answer => {
-            const button = document.createElement('button');
-            button.className = 'btn btn-outline-primary btn-lg text-start';
-            button.innerHTML = `<i class="bi bi-circle me-2"></i>${escapeHtml(answer.text)}`;
-            button.dataset.answerId = answer.id;
-            button.onclick = () => submitAnswer(answer.id);
-            answersContainer.appendChild(button);
-        });
+                // Fetch current question from API
+                const response = await fetch(`/api/game/session/${sessionId}/question`);
 
-        // Reset feedback
-        document.getElementById('feedbackMessage').classList.add('d-none');
+                if (! response.ok) {
+                    if (response.status === 404) {
+                        document.querySelector('#waitingMessage h4').textContent = 'Waiting for next question...';
+                        return;
+                    }
+                    throw new Error('Failed to load question');
+                }
 
-        // Show question content
-        document.getElementById('waitingMessage').classList.add('d-none');
-        document.getElementById('questionContent').classList.remove('d-none');
+                const data = await response.json();
+                currentQuestion = data.question;
+                totalQuestions = data.totalQuestions;
 
-        // Start timer
-        startTimer(currentQuestion.timeLimit);
-        startTime = Date.now();
-        answered = false;
-    }
+                // Update question number
+                document.getElementById('questionNumber').textContent = data.currentIndex + 1;
+                document.getElementById('totalQuestions').textContent = totalQuestions;
 
-    function startTimer(seconds) {
-        if (timerInterval) clearInterval(timerInterval);
-        
-        let timeLeft = seconds;
-        document.getElementById('timer').textContent = timeLeft;
-        
-        timerInterval = setInterval(() => {
-            timeLeft--;
+                // Display question
+                document.getElementById('questionText').textContent = currentQuestion.text;
+
+                // Display answers
+                const answersContainer = document.getElementById('answersContainer');
+                answersContainer.innerHTML = '';
+
+                // Sort answers by orderIndex
+                const sortedAnswers = currentQuestion.answers.sort((a, b) => a.orderIndex - b.orderIndex);
+
+                sortedAnswers.forEach(answer => {
+                    const button = document.createElement('button');
+                    button.className = 'btn btn-outline-primary btn-lg text-start';
+                    button.innerHTML = `<i class="bi bi-circle me-2"></i>${escapeHtml(answer.text)}`;
+                    button.dataset.answerId = answer.id;
+                    button.onclick = () => submitAnswer(answer.id);
+                    answersContainer.appendChild(button);
+                });
+
+                // Reset feedback
+                document.getElementById('feedbackMessage').classList.add('d-none');
+
+                // Show question content
+                document.getElementById('waitingMessage').classList.add('d-none');
+                document.getElementById('questionContent').classList.remove('d-none');
+
+                // Start timer
+                startTimer(currentQuestion.timeLimit);
+                startTime = Date.now();
+                answered = false;
+            } catch (error) {
+                console.error('Error loading question:', error);
+                document.querySelector('#waitingMessage h4').textContent = 'Error loading question.  Please wait...';
+            }
+        }
+
+        function startTimer(seconds) {
+            if (timerInterval) clearInterval(timerInterval);
+
+            let timeLeft = seconds;
             document.getElementById('timer').textContent = timeLeft;
-            
-            if (timeLeft <= 0) {
-                clearInterval(timerInterval);
-                if (!answered) {
-                    showFeedback(false, 0, 'Time\'s up!');
-                    disableAnswers();
+
+            timerInterval = setInterval(() => {
+                timeLeft--;
+                document.getElementById('timer').textContent = timeLeft;
+
+                if (timeLeft <= 0) {
+                    clearInterval(timerInterval);
+                    if (!answered) {
+                        showFeedback(false, 0, 'Time\'s up!');
+                        disableAnswers();
+                    }
                 }
-            }
-        }, 1000);
-    }
-
-    async function submitAnswer(answerId) {
-        if (answered) return;
-        
-        answered = true;
-        const timeMs = Date.now() - startTime;
-        
-        // Disable all answer buttons
-        disableAnswers();
-        
-        try {
-            const response = await fetch('/api/game/answer/submit', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    participantId: participantId,
-                    questionId: currentQuestion.id,
-                    answerId: answerId,
-                    timeMs: timeMs
-                })
-            });
-
-            const data = await response.json();
-
-            if (response.ok) {
-                // Update score
-                document.getElementById('currentScore').textContent = data.totalScore;
-                
-                // Show feedback
-                showFeedback(data.correct, data.points, 
-                    data.correct ? `Correct! +${data.points} points` : 'Incorrect');
-                
-                // Highlight selected answer
-                highlightAnswer(answerId, data.correct);
-            } else {
-                showFeedback(false, 0, data.error || 'Error submitting answer');
-            }
-        } catch (error) {
-            console.error('Error submitting answer:', error);
-            showFeedback(false, 0, 'Network error');
+            }, 1000);
         }
-    }
 
-    function disableAnswers() {
-        document.querySelectorAll('#answersContainer button').forEach(btn => {
-            btn.disabled = true;
-        });
-    }
+        async function submitAnswer(answerId) {
+            if (answered) return;
 
-    function highlightAnswer(answerId, correct) {
-        document.querySelectorAll('#answersContainer button').forEach(btn => {
-            if (btn.dataset.answerId == answerId) {
-                btn.classList.remove('btn-outline-primary');
-                btn.classList.add(correct ? 'btn-success' : 'btn-danger');
-                btn.innerHTML = btn.innerHTML.replace('bi-circle', correct ? 'bi-check-circle-fill' : 'bi-x-circle-fill');
+            answered = true;
+            const timeMs = Date.now() - startTime;
+
+            // Disable all answer buttons
+            disableAnswers();
+
+            try {
+                const response = await fetch('/api/game/answer/submit', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        participantId: participantId,
+                        questionId: currentQuestion.id,
+                        answerId: answerId,
+                        timeMs: timeMs
+                    })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    // Update score
+                    document.getElementById('currentScore').textContent = data.totalScore;
+
+                    // Show feedback
+                    showFeedback(data.correct, data.points,
+                        data.correct ? `Correct! +${data.points} points` : 'Incorrect');
+
+                    // Highlight selected answer
+                    highlightAnswer(answerId, data.correct);
+                } else {
+                    showFeedback(false, 0, data.error || 'Error submitting answer');
+                }
+            } catch (error) {
+                console.error('Error submitting answer:', error);
+                showFeedback(false, 0, 'Network error');
             }
+        }
+
+        function disableAnswers() {
+            document.querySelectorAll('#answersContainer button').forEach(btn => {
+                btn.disabled = true;
+            });
+        }
+
+        function highlightAnswer(answerId, correct) {
+            document.querySelectorAll('#answersContainer button'). forEach(btn => {
+                if (btn.dataset.answerId == answerId) {
+                    btn. classList.remove('btn-outline-primary');
+                    btn.classList.add(correct ? 'btn-success' : 'btn-danger');
+                    btn.innerHTML = btn.innerHTML.replace('bi-circle', correct ? 'bi-check-circle-fill' : 'bi-x-circle-fill');
+                }
+            });
+        }
+
+        function showFeedback(correct, points, message) {
+            const feedback = document.getElementById('feedbackMessage');
+            feedback.className = `alert mt-4 ${correct ? 'alert-success' : 'alert-danger'}`;
+            feedback. innerHTML = `<i class="bi bi-${correct ? 'check' : 'x'}-circle-fill"></i> ${message}`;
+            feedback.classList.remove('d-none');
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // Cleanup on page unload
+        window.addEventListener('beforeunload', function() {
+            clearInterval(pollInterval);
+            clearInterval(timerInterval);
         });
-    }
-
-    function showFeedback(correct, points, message) {
-        const feedback = document.getElementById('feedbackMessage');
-        feedback.className = `alert mt-4 ${correct ? 'alert-success' : 'alert-danger'}`;
-        feedback.innerHTML = `<i class="bi bi-${correct ? 'check' : 'x'}-circle-fill"></i> ${message}`;
-        feedback.classList.remove('d-none');
-    }
-
-    function escapeHtml(text) {
-        const div = document.createElement('div');
-        div.textContent = text;
-        return div.innerHTML;
-    }
-
-    // Cleanup on page unload
-    window.addEventListener('beforeunload', function() {
-        clearInterval(pollInterval);
-        clearInterval(timerInterval);
-    });
-</script>
+    </script>
 {% endblock %}
