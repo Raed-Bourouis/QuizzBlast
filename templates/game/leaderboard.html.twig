@@ -1,0 +1,136 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Leaderboard - QuizzBlast{% endblock %}
+
+{% block body %}
+<div class="container my-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card card-custom fade-in-up">
+                <div class="card-body p-5">
+                    <div class="text-center mb-5">
+                        <h1 class="display-4 fw-bold mb-3">
+                            <i class="bi bi-trophy-fill text-warning"></i>
+                            Game Complete!
+                        </h1>
+                        <p class="text-muted">Session: {{ session.code }}</p>
+                        <p class="text-muted">Quiz: <strong>{{ session.quiz.title }}</strong></p>
+                    </div>
+
+                    {% if participants|length > 0 %}
+                        <!-- Winner Announcement -->
+                        <div class="alert alert-success text-center mb-4" role="alert">
+                            <h3 class="mb-2">
+                                <i class="bi bi-star-fill"></i>
+                                Winner: {{ participants[0].nickname }}
+                            </h3>
+                            <h4 class="mb-0">{{ participants[0].totalScore }} points</h4>
+                        </div>
+
+                        <!-- Top 3 Podium -->
+                        {% if participants|length >= 3 %}
+                        <div class="row text-center mb-5">
+                            <!-- 2nd Place -->
+                            <div class="col-4 order-1">
+                                <div class="card bg-light" style="margin-top: 2rem;">
+                                    <div class="card-body">
+                                        <div class="fs-1">🥈</div>
+                                        <h5 class="fw-bold mb-1">2nd Place</h5>
+                                        <p class="mb-1"><strong>{{ participants[1].nickname }}</strong></p>
+                                        <p class="text-primary fw-bold mb-0">{{ participants[1].totalScore }} pts</p>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- 1st Place -->
+                            <div class="col-4 order-0 order-md-2">
+                                <div class="card bg-warning bg-opacity-25">
+                                    <div class="card-body">
+                                        <div class="fs-1">🥇</div>
+                                        <h5 class="fw-bold mb-1">1st Place</h5>
+                                        <p class="mb-1"><strong>{{ participants[0].nickname }}</strong></p>
+                                        <p class="text-primary fw-bold mb-0">{{ participants[0].totalScore }} pts</p>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- 3rd Place -->
+                            <div class="col-4 order-3">
+                                <div class="card bg-light" style="margin-top: 4rem;">
+                                    <div class="card-body">
+                                        <div class="fs-1">🥉</div>
+                                        <h5 class="fw-bold mb-1">3rd Place</h5>
+                                        <p class="mb-1"><strong>{{ participants[2].nickname }}</strong></p>
+                                        <p class="text-primary fw-bold mb-0">{{ participants[2].totalScore }} pts</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endif %}
+
+                        <!-- Full Leaderboard -->
+                        <h4 class="fw-bold mb-3">
+                            <i class="bi bi-list-ol"></i>
+                            Final Rankings
+                        </h4>
+                        <div class="list-group mb-4">
+                            {% for participant in participants %}
+                                <div class="list-group-item d-flex justify-content-between align-items-center
+                                    {% if loop.index == 1 %}border-warning border-3{% endif %}">
+                                    <div class="d-flex align-items-center">
+                                        <span class="badge 
+                                            {% if loop.index == 1 %}bg-warning text-dark
+                                            {% elseif loop.index == 2 %}bg-secondary
+                                            {% elseif loop.index == 3 %}bg-info
+                                            {% else %}bg-light text-dark
+                                            {% endif %} 
+                                            rounded-circle me-3" 
+                                            style="width: 40px; height: 40px; line-height: 40px; font-size: 1.2rem;">
+                                            {{ loop.index }}
+                                        </span>
+                                        <div>
+                                            <strong class="fs-5">{{ participant.nickname }}</strong>
+                                            {% if participant.isHost %}
+                                                <span class="badge bg-primary ms-2">
+                                                    <i class="bi bi-star-fill"></i> Host
+                                                </span>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                    <div class="text-end">
+                                        <h5 class="mb-0 text-primary">{{ participant.totalScore }} points</h5>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="alert alert-warning text-center">
+                            <i class="bi bi-exclamation-triangle-fill"></i>
+                            No participants found
+                        </div>
+                    {% endif %}
+
+                    <!-- Actions -->
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-center">
+                        <a href="{{ path('app_quiz_index') }}" class="btn btn-primary-custom">
+                            <i class="bi bi-collection-fill"></i> Browse Quizzes
+                        </a>
+                        {% if app.user and session.host == app.user %}
+                            <a href="{{ path('game_start', {'id': session.quiz.id}) }}" class="btn btn-outline-custom">
+                                <i class="bi bi-arrow-repeat"></i> Play Again
+                            </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .card.bg-warning {
+        transform: scale(1.05);
+        box-shadow: 0 15px 30px rgba(255, 193, 7, 0.3);
+    }
+</style>
+{% endblock %}

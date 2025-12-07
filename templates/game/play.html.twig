@@ -1,0 +1,246 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Play - QuizzBlast{% endblock %}
+
+{% block body %}
+<div class="container my-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <!-- Score and Progress Header -->
+            <div class="card card-custom mb-4">
+                <div class="card-body p-3">
+                    <div class="row align-items-center">
+                        <div class="col-md-4 text-center text-md-start">
+                            <h5 class="mb-0">
+                                <i class="bi bi-trophy-fill text-warning"></i>
+                                Score: <span id="currentScore" class="fw-bold text-primary">{{ participant.totalScore }}</span>
+                            </h5>
+                        </div>
+                        <div class="col-md-4 text-center">
+                            <h5 class="mb-0">
+                                <i class="bi bi-list-ol"></i>
+                                Question <span id="questionNumber">1</span> of <span id="totalQuestions">{{ session.quiz.questions|length }}</span>
+                            </h5>
+                        </div>
+                        <div class="col-md-4 text-center text-md-end">
+                            <h5 class="mb-0">
+                                <i class="bi bi-clock-fill text-danger"></i>
+                                Time: <span id="timer" class="fw-bold">30</span>s
+                            </h5>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Question Card -->
+            <div class="card card-custom" id="questionCard">
+                <div class="card-body p-5">
+                    <div id="waitingMessage" class="text-center">
+                        <div class="spinner-border text-primary mb-3" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                        <h4>Waiting for next question...</h4>
+                    </div>
+
+                    <div id="questionContent" class="d-none">
+                        <h2 class="mb-4 text-center" id="questionText"></h2>
+                        
+                        <div id="answersContainer" class="d-grid gap-3">
+                            <!-- Answers will be inserted here -->
+                        </div>
+
+                        <div id="feedbackMessage" class="alert d-none mt-4" role="alert"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const sessionId = {{ session.id }};
+    const sessionCode = '{{ session.code }}';
+    const participantId = {{ participant.id }};
+    const quizQuestions = {{ session.quiz.questions|json_encode|raw }};
+    
+    let currentQuestionIndex = {{ session.currentQuestionIndex }};
+    let currentQuestion = null;
+    let timerInterval = null;
+    let pollInterval = null;
+    let startTime = null;
+    let answered = false;
+
+    // Start polling for game state
+    pollInterval = setInterval(pollForGameState, 1000);
+    
+    // Initialize the first question
+    loadQuestion();
+
+    async function pollForGameState() {
+        try {
+            const response = await fetch(`/api/game/session/${sessionId}/state`);
+            const data = await response.json();
+
+            if (response.ok) {
+                // Check if question changed
+                if (data.currentQuestionIndex !== currentQuestionIndex) {
+                    currentQuestionIndex = data.currentQuestionIndex;
+                    answered = false;
+                    loadQuestion();
+                }
+
+                // Check if game ended
+                if (data.status === 'FINISHED') {
+                    clearInterval(pollInterval);
+                    clearInterval(timerInterval);
+                    window.location.href = `/game/${sessionCode}/leaderboard`;
+                }
+            }
+        } catch (error) {
+            console.error('Error polling game state:', error);
+        }
+    }
+
+    function loadQuestion() {
+        if (currentQuestionIndex >= quizQuestions.length) {
+            document.getElementById('questionContent').classList.add('d-none');
+            document.getElementById('waitingMessage').classList.remove('d-none');
+            document.querySelector('#waitingMessage h4').textContent = 'Game ending...';
+            return;
+        }
+
+        currentQuestion = quizQuestions[currentQuestionIndex];
+        
+        // Update question number
+        document.getElementById('questionNumber').textContent = currentQuestionIndex + 1;
+        document.getElementById('totalQuestions').textContent = quizQuestions.length;
+
+        // Display question
+        document.getElementById('questionText').textContent = currentQuestion.text;
+        
+        // Display answers
+        const answersContainer = document.getElementById('answersContainer');
+        answersContainer.innerHTML = '';
+        
+        currentQuestion.answers.forEach(answer => {
+            const button = document.createElement('button');
+            button.className = 'btn btn-outline-primary btn-lg text-start';
+            button.innerHTML = `<i class="bi bi-circle me-2"></i>${escapeHtml(answer.text)}`;
+            button.dataset.answerId = answer.id;
+            button.onclick = () => submitAnswer(answer.id);
+            answersContainer.appendChild(button);
+        });
+
+        // Reset feedback
+        document.getElementById('feedbackMessage').classList.add('d-none');
+
+        // Show question content
+        document.getElementById('waitingMessage').classList.add('d-none');
+        document.getElementById('questionContent').classList.remove('d-none');
+
+        // Start timer
+        startTimer(currentQuestion.timeLimit);
+        startTime = Date.now();
+        answered = false;
+    }
+
+    function startTimer(seconds) {
+        if (timerInterval) clearInterval(timerInterval);
+        
+        let timeLeft = seconds;
+        document.getElementById('timer').textContent = timeLeft;
+        
+        timerInterval = setInterval(() => {
+            timeLeft--;
+            document.getElementById('timer').textContent = timeLeft;
+            
+            if (timeLeft <= 0) {
+                clearInterval(timerInterval);
+                if (!answered) {
+                    showFeedback(false, 0, 'Time\'s up!');
+                    disableAnswers();
+                }
+            }
+        }, 1000);
+    }
+
+    async function submitAnswer(answerId) {
+        if (answered) return;
+        
+        answered = true;
+        const timeMs = Date.now() - startTime;
+        
+        // Disable all answer buttons
+        disableAnswers();
+        
+        try {
+            const response = await fetch('/api/game/answer/submit', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    participantId: participantId,
+                    questionId: currentQuestion.id,
+                    answerId: answerId,
+                    timeMs: timeMs
+                })
+            });
+
+            const data = await response.json();
+
+            if (response.ok) {
+                // Update score
+                document.getElementById('currentScore').textContent = data.totalScore;
+                
+                // Show feedback
+                showFeedback(data.correct, data.points, 
+                    data.correct ? `Correct! +${data.points} points` : 'Incorrect');
+                
+                // Highlight selected answer
+                highlightAnswer(answerId, data.correct);
+            } else {
+                showFeedback(false, 0, data.error || 'Error submitting answer');
+            }
+        } catch (error) {
+            console.error('Error submitting answer:', error);
+            showFeedback(false, 0, 'Network error');
+        }
+    }
+
+    function disableAnswers() {
+        document.querySelectorAll('#answersContainer button').forEach(btn => {
+            btn.disabled = true;
+        });
+    }
+
+    function highlightAnswer(answerId, correct) {
+        document.querySelectorAll('#answersContainer button').forEach(btn => {
+            if (btn.dataset.answerId == answerId) {
+                btn.classList.remove('btn-outline-primary');
+                btn.classList.add(correct ? 'btn-success' : 'btn-danger');
+                btn.innerHTML = btn.innerHTML.replace('bi-circle', correct ? 'bi-check-circle-fill' : 'bi-x-circle-fill');
+            }
+        });
+    }
+
+    function showFeedback(correct, points, message) {
+        const feedback = document.getElementById('feedbackMessage');
+        feedback.className = `alert mt-4 ${correct ? 'alert-success' : 'alert-danger'}`;
+        feedback.innerHTML = `<i class="bi bi-${correct ? 'check' : 'x'}-circle-fill"></i> ${message}`;
+        feedback.classList.remove('d-none');
+    }
+
+    function escapeHtml(text) {
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    }
+
+    // Cleanup on page unload
+    window.addEventListener('beforeunload', function() {
+        clearInterval(pollInterval);
+        clearInterval(timerInterval);
+    });
+</script>
+{% endblock %}

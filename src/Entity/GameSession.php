@@ -29,6 +29,9 @@ class GameSession
     #[ORM\Column(type: Types::DATETIME_IMMUTABLE, nullable: true)]
     private ?\DateTimeImmutable $startedAt = null;
 
+    #[ORM\Column(type: Types::DATETIME_IMMUTABLE, nullable: true)]
+    private ?\DateTimeImmutable $endedAt = null;
+
     #[ORM\Column]
     private ?int $currentQuestionIndex = null;
 
@@ -87,6 +90,18 @@ class GameSession
     public function setStartedAt(?\DateTimeImmutable $startedAt): static
     {
         $this->startedAt = $startedAt;
+
+        return $this;
+    }
+
+    public function getEndedAt(): ?\DateTimeImmutable
+    {
+        return $this->endedAt;
+    }
+
+    public function setEndedAt(?\DateTimeImmutable $endedAt): static
+    {
+        $this->endedAt = $endedAt;
 
         return $this;
     }

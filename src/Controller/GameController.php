@@ -171,19 +171,68 @@ class GameController extends AbstractController
         $timeMs = $data['timeMs'] ?? 0;
 
         if (!$participantId || !$questionId || !$answerId) {
-            return $this->json(['error' => 'Missing fields'], 400);
+            return $this->json(['error' => 'Missing required fields'], 400);
         }
 
         $participant = $this->participantRepo->find($participantId);
-        if (!$participant) return $this->json(['error' => 'Participant not found'], 404);
+        if (!$participant) {
+            return $this->json(['error' => 'Participant not found'], 404);
+        }
+
+        $session = $participant->getGameSession();
+        if (!$session) {
+            return $this->json(['error' => 'Session not found'], 404);
+        }
+
+        // Validate session is in progress
+        if ($session->getStatus() !== GameSession::STATUS_IN_PROGRESS) {
+            return $this->json(['error' => 'Session is not in progress'], 400);
+        }
 
         $question = $this->em->getRepository(Question::class)->find($questionId);
-        $answer = $this->em->getRepository(Answer::class)->find($answerId);
-        if (!$question || !$answer) return $this->json(['error' => 'Question/Answer not found'], 404);
+        if (!$question) {
+            return $this->json(['error' => 'Question not found'], 404);
+        }
 
-        $isCorrect = $answer->getIsCorrect(); // adapte le nom du champ
-        // exemple simple de scoring : 100 pts si correct - (timeMs/100)
-        $points = $isCorrect ? max(0, 100 - intdiv($timeMs, 100)) : 0;
+        // Validate this is the current question
+        $questions = $session->getQuiz()->getQuestions()->toArray();
+        $currentQuestion = $questions[$session->getCurrentQuestionIndex()] ?? null;
+        if (!$currentQuestion || $currentQuestion->getId() !== $question->getId()) {
+            return $this->json(['error' => 'Not the current question'], 400);
+        }
+
+        // Check if already answered this question
+        $existingAnswer = $this->playerAnswerRepo->findOneBy([
+            'gameParticipant' => $participant,
+            'question' => $question
+        ]);
+        if ($existingAnswer) {
+            return $this->json(['error' => 'Already answered this question'], 400);
+        }
+
+        $answer = $this->em->getRepository(Answer::class)->find($answerId);
+        if (!$answer) {
+            return $this->json(['error' => 'Answer not found'], 404);
+        }
+
+        // Validate answer belongs to question
+        if ($answer->getQuestion()->getId() !== $question->getId()) {
+            return $this->json(['error' => 'Answer does not belong to this question'], 400);
+        }
+
+        $isCorrect = $answer->isCorrect();
+        $points = 0;
+
+        if ($isCorrect) {
+            $points = $question->getPoints();
+            
+            // Time bonus: faster answers get more points (max 20% bonus)
+            $timeLimit = $question->getTimeLimit() * 1000; // Convert to ms
+            if ($timeMs < $timeLimit) {
+                $timeBonus = (1 - ($timeMs / $timeLimit)) * 0.2;
+                $points = (int) ($points * (1 + $timeBonus));
+            }
+        }
 
         $playerAnswer = new PlayerAnswer();
         $playerAnswer->setGameParticipant($participant);
