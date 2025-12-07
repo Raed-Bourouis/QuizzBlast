@@ -45,6 +45,7 @@ class QuestionType extends AbstractType
                 'allow_delete' => true,
                 'by_reference' => false,
                 'label' => 'Answers',
+                'attr' => ['class' => 'answers-collection'],
             ])
         ;
     }
