@@ -89,6 +89,9 @@ function addQuestion(collection) {
     if (!answersCollection) {
         // Look for the CollectionType for answers by finding an element with data-prototype
         // We look for nested collections (not the top-level questions collection)
+        // NOTE: This assumes the first nested CollectionType is the answers collection.
+        // If additional nested CollectionTypes are added in the future, this logic may need
+        // to be updated to use a more specific selector (e.g., based on field name or data attribute).
         const potentialCollections = wrapper.querySelectorAll('[data-prototype]');
         for (const collection of potentialCollections) {
             // Check if this is nested within the question (not the questions collection itself)
@@ -108,6 +111,9 @@ function addQuestion(collection) {
         }
         
         // Add answers header if it doesn't exist
+        // NOTE: This header is needed for dynamically added questions since the prototype
+        // only contains form fields, not the surrounding template markup.
+        // For questions loaded from the server, the header already exists in the template.
         const parentNode = answersCollection.parentNode;
         if (parentNode) {
             const existingHeader = parentNode.querySelector('.answers-header');
